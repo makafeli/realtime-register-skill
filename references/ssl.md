@@ -34,6 +34,12 @@ Retrieve a certificate order and its current state.
 | --- | --- | --- | --- |
 | `id` | `string` | yes |  |
 
+**Query params**
+
+| Name | Type | Required | Description |
+| --- | --- | --- | --- |
+| `fields` | `string` | no | Comma-separated field selector. |
+
 **Responses**
 
 - `200` — Certificate object with `status`, `commonName`, `sans`, `dcv`, `validFrom`, `validUntil`.
@@ -81,6 +87,12 @@ Retrieve SSL product metadata (validation type, SAN limits, warranty).
 | Name | Type | Required | Description |
 | --- | --- | --- | --- |
 | `id` | `string` | yes |  |
+
+**Query params**
+
+| Name | Type | Required | Description |
+| --- | --- | --- | --- |
+| `fields` | `string` | no | Comma-separated field selector. |
 
 **Responses**
 
@@ -133,16 +145,28 @@ Place a new certificate order.
 
 | Field | Type | Required | Description |
 | --- | --- | --- | --- |
+| `customer` | `string` | yes | The customer handle. |
 | `product` | `string` | yes | SSL product identifier. |
 | `period` | `integer` | yes | Validity period in MONTHS. |
 | `csr` | `string` | yes | PEM-encoded PKCS#10 CSR. |
-| `sans` | `string[]` | no | Subject Alternative Names. |
+| `domainName` | `string` | no | Overrides the common name in the CSR; see requiredFields/optionalFields in SSL product metadata. |
+| `san` | `string[]` | no | SAN domains, overrides the alternative names in the CSR. Only applicable for multi-domain certificates. Set to an empty list to exclude the free www/non-www name. |
+| `organization` | `string` | no | Overrides the Organization field in the CSR. |
+| `department` | `string` | no | Deprecated. Overrides the Organisational Unit field in the CSR. |
+| `country` | `CountryCode` | no | Taken from the CSR when not explicitly passed. |
+| `state` | `string` | no | Taken from the CSR when not explicitly passed. |
+| `address` | `string` | no | See requiredFields/optionalFields in SSL product metadata for supported usage. |
+| `postalCode` | `string` | no | See requiredFields/optionalFields in SSL product metadata for supported usage. |
+| `city` | `string` | no | Overrides the City field in the CSR. |
+| `coc` | `string` | no | Chamber of Commerce identifier. |
+| `saEmail` | `string` | no | Recipient for the Subscriber Agreement. |
+| `saLanguage` | `string` | no | Deprecated. Use `language`; kept for backward compatibility when `language` is not supplied. |
+| `language` | `string` | no | Preferred language for validations. Defaults based on country; falls back to English if unsupported by the provider. |
+| `uniqueValue` | `string` | no | Alphanumeric DCV validation value; a random string is generated if omitted. |
+| `authKey` | `boolean` | no | Use auth key validation for direct issuance. |
+| `approver` | `Approver` | no | Approver of the certificate. |
 | `dcv` | `Dcv[]` | no | DCV method per FQDN. |
-| `approver` | `Approver` | no | Organization contact for OV/EV issuance. |
-| `organization` | `SslOrganization` | no |  |
-| `language` | `string` | no |  |
 | `billables` | `Billable[]` | no |  |
-| `autoRenew` | `boolean` | no | Defaults to false. |
 
 **Responses**
 
@@ -156,6 +180,7 @@ Place a new certificate order.
 - `period` is MONTHS; industry-standard max is 13.
 - DV orders allow DCV via EMAIL/DNS/HTTP/HTTPS; OV/EV typically require EMAIL plus organization verification.
 - CSR `commonName` must match the first SAN.
+- `customer` is required by the live API even though it does not appear in the URL. `sans` from earlier spec revisions has been renamed to `san` to match the wire format; `organization` is a flat string here, not an object (unlike `SslOrganization` used elsewhere).
 
 
 ### `reissueCertificate`
@@ -173,12 +198,30 @@ Reissue a certificate with a new CSR or SAN set.
 | --- | --- | --- | --- |
 | `id` | `string` | yes |  |
 
+**Query params**
+
+| Name | Type | Required | Description |
+| --- | --- | --- | --- |
+| `quote` | `boolean` | no |  |
+
 **Request body** (`application/json`)
 
 | Field | Type | Required | Description |
 | --- | --- | --- | --- |
-| `csr` | `string` | yes |  |
-| `sans` | `string[]` | no |  |
+| `csr` | `string` | yes | A valid Certificate Signing Request. |
+| `domainName` | `string` | no | Overrides the common name in the CSR; see requiredFields/optionalFields in SSL product metadata. |
+| `san` | `string[]` | no | SAN domains, overrides the alternative names in the CSR. Only applicable for multi-domain certificates. Set to an empty list to exclude the free www/non-www name. |
+| `organization` | `string` | no | Overrides the Organization field in the CSR. |
+| `department` | `string` | no | Deprecated. Overrides the Organisational Unit field in the CSR. |
+| `state` | `string` | no | Taken from the CSR when not explicitly passed. |
+| `address` | `string` | no | See requiredFields/optionalFields in SSL product metadata for supported usage. |
+| `postalCode` | `string` | no | See requiredFields/optionalFields in SSL product metadata for supported usage. |
+| `city` | `string` | no | Overrides the City field in the CSR. |
+| `coc` | `string` | no | Chamber of Commerce identifier. |
+| `language` | `string` | no | Preferred language for validations. Defaults based on country; falls back to English if unsupported by the provider. |
+| `uniqueValue` | `string` | no | Alphanumeric DCV validation value; a random string is generated if omitted. |
+| `authKey` | `boolean` | no | Use auth key validation for direct issuance. |
+| `approver` | `Approver` | no | Approver of the certificate. |
 | `dcv` | `Dcv[]` | no |  |
 
 **Responses**
@@ -186,6 +229,10 @@ Reissue a certificate with a new CSR or SAN set.
 - `202` — { processId }
 
 **Errors:** `InvalidParameter`, `ObjectDoesNotExist`
+
+**Gotchas**
+
+- `sans` from earlier spec revisions has been renamed to `san` to match the wire format.
 
 
 ### `renewCertificate`
@@ -203,12 +250,32 @@ Renew an existing certificate.
 | --- | --- | --- | --- |
 | `id` | `string` | yes |  |
 
+**Query params**
+
+| Name | Type | Required | Description |
+| --- | --- | --- | --- |
+| `quote` | `boolean` | no |  |
+
 **Request body** (`application/json`)
 
 | Field | Type | Required | Description |
 | --- | --- | --- | --- |
-| `period` | `integer` | yes | Months. |
-| `csr` | `string` | yes |  |
+| `product` | `string` | no | Product to renew to; defaults to the current product when omitted. |
+| `period` | `integer` | yes | Validity period in MONTHS. |
+| `csr` | `string` | yes | A valid Certificate Signing Request. |
+| `domainName` | `string` | no | Overrides the common name in the CSR; see requiredFields/optionalFields in SSL product metadata. |
+| `san` | `string[]` | no | SAN domains, overrides the alternative names in the CSR. Only applicable for multi-domain certificates. Set to an empty list to exclude the free www/non-www name. |
+| `organization` | `string` | no | Overrides the Organization field in the CSR. |
+| `department` | `string` | no | Deprecated. Overrides the Organisational Unit field in the CSR. |
+| `state` | `string` | no | Taken from the CSR when not explicitly passed. |
+| `address` | `string` | no | See requiredFields/optionalFields in SSL product metadata for supported usage. |
+| `postalCode` | `string` | no | See requiredFields/optionalFields in SSL product metadata for supported usage. |
+| `city` | `string` | no | Overrides the City field in the CSR. |
+| `coc` | `string` | no | Chamber of Commerce identifier. |
+| `language` | `string` | no | Preferred language for validations. Defaults based on country; falls back to English if unsupported by the provider. |
+| `uniqueValue` | `string` | no | Alphanumeric DCV validation value; a random string is generated if omitted. |
+| `authKey` | `boolean` | no | Use auth key validation for direct issuance. |
+| `approver` | `Approver` | no | Approver of the certificate. |
 | `dcv` | `Dcv[]` | no |  |
 | `billables` | `Billable[]` | no |  |
 
@@ -415,7 +482,7 @@ Attach a free-form note to a certificate order. DEPRECATED; use a ticketing syst
 
 | Field | Type | Required | Description |
 | --- | --- | --- | --- |
-| `note` | `string` | yes |  |
+| `message` | `string` | yes | Message which should be sent to the SSL provider. |
 
 **Responses**
 
@@ -426,6 +493,7 @@ Attach a free-form note to a certificate order. DEPRECATED; use a ticketing syst
 **Gotchas**
 
 - Marked Deprecated in the live documentation; new integrations should avoid this endpoint.
+- The body field is `message`, not `note`.
 
 
 ### `importCertificate`
@@ -441,10 +509,11 @@ Import an externally issued certificate so it can be tracked and renewed through
 
 | Field | Type | Required | Description |
 | --- | --- | --- | --- |
+| `customer` | `string` | yes | The customer handle. |
 | `certificate` | `string` | yes | PEM-encoded certificate (leaf). |
-| `caBundle` | `string` | no | PEM-encoded intermediate chain. |
 | `csr` | `string` | no | Original PEM-encoded CSR (if available). |
-| `coverage` | `string` | no | Product identifier that the imported cert most closely matches. |
+| `coc` | `string` | no | Chamber of Commerce identifier. |
+| `domainName` | `string` | no | Overrides the common name of the certificate; if the certificate's common name differs from this value, it is added as a SAN. Use to choose which SAN becomes the common name for certs issued without one. |
 
 **Responses**
 
@@ -487,6 +556,13 @@ Generate a new authKey used for ACME external-account-binding (EAB) or programma
 
 - **Docs:** `https://dm.realtimeregister.com/docs/api/ssl/generate-authkey`
 - **Auth scope:** `customer`
+
+**Request body** (`application/json`)
+
+| Field | Type | Required | Description |
+| --- | --- | --- | --- |
+| `product` | `string` | yes | The SSL product. |
+| `csr` | `string` | yes | The Certificate Signing Request. |
 
 **Responses**
 

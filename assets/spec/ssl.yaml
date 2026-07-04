@@ -21,6 +21,8 @@ operations:
     summary: Retrieve a certificate order and its current state.
     pathParams:
       - { name: id, type: string, required: true }
+    queryParams:
+      - { name: fields, type: string, description: "Comma-separated field selector." }
     responses:
       "200": { description: "Certificate object with `status`, `commonName`, `sans`, `dcv`, `validFrom`, `validUntil`." }
     errors: [ObjectDoesNotExist, AuthorizationFailed]
@@ -53,6 +55,8 @@ operations:
     summary: Retrieve SSL product metadata (validation type, SAN limits, warranty).
     pathParams:
       - { name: id, type: string, required: true }
+    queryParams:
+      - { name: fields, type: string, description: "Comma-separated field selector." }
     responses:
       "200": { description: "Product object with `brand`, `validationType`, `maxSans`, `periods`." }
     errors: [ObjectDoesNotExist]
@@ -87,16 +91,28 @@ operations:
     requestBody:
       contentType: application/json
       fields:
-        product:        { type: string, required: true, description: "SSL product identifier." }
-        period:         { type: integer, required: true, description: "Validity period in MONTHS." }
-        csr:            { type: string, required: true, description: "PEM-encoded PKCS#10 CSR." }
-        sans:           { type: array, items: string, description: "Subject Alternative Names." }
-        dcv:            { type: array, itemsRef: Dcv, description: "DCV method per FQDN." }
-        approver:       { type: object, fieldsRef: Approver, description: "Organization contact for OV/EV issuance." }
-        organization:   { type: object, fieldsRef: SslOrganization }
-        language:       { type: string, default: "en", maxLength: 5 }
-        billables:      { type: array, itemsRef: Billable }
-        autoRenew:      { type: boolean, description: "Defaults to false." }
+        customer:     { type: string, required: true, minLength: 3, maxLength: 40, description: "The customer handle." }
+        product:      { type: string, required: true, description: "SSL product identifier." }
+        period:       { type: integer, required: true, description: "Validity period in MONTHS." }
+        csr:          { type: string, required: true, description: "PEM-encoded PKCS#10 CSR." }
+        domainName:   { type: string, minLength: 4, maxLength: 255, description: "Overrides the common name in the CSR; see requiredFields/optionalFields in SSL product metadata." }
+        san:          { type: array, items: string, description: "SAN domains, overrides the alternative names in the CSR. Only applicable for multi-domain certificates. Set to an empty list to exclude the free www/non-www name." }
+        organization: { type: string, minLength: 1, maxLength: 64, description: "Overrides the Organization field in the CSR." }
+        department:   { type: string, minLength: 1, maxLength: 60, description: "Deprecated. Overrides the Organisational Unit field in the CSR." }
+        country:      { type: string, minLength: 2, maxLength: 2, enumRef: CountryCode, description: "Taken from the CSR when not explicitly passed." }
+        state:        { type: string, minLength: 1, maxLength: 60, description: "Taken from the CSR when not explicitly passed." }
+        address:      { type: string, minLength: 1, maxLength: 60, description: "See requiredFields/optionalFields in SSL product metadata for supported usage." }
+        postalCode:   { type: string, minLength: 1, maxLength: 10, description: "See requiredFields/optionalFields in SSL product metadata for supported usage." }
+        city:         { type: string, minLength: 1, maxLength: 60, description: "Overrides the City field in the CSR." }
+        coc:          { type: string, minLength: 1, maxLength: 32, description: "Chamber of Commerce identifier." }
+        saEmail:      { type: string, format: email, description: "Recipient for the Subscriber Agreement." }
+        saLanguage:   { type: string, enum: [EN, NL, FR, CN, DE, IT, JP, KR, PT, RU, ES, DK, SE, TR], description: "Deprecated. Use `language`; kept for backward compatibility when `language` is not supplied." }
+        language:     { type: string, enum: [EN, NL, FR, CN, DE, IT, JP, KR, PT, RU, ES, DK, SE, TR], description: "Preferred language for validations. Defaults based on country; falls back to English if unsupported by the provider." }
+        uniqueValue:  { type: string, minLength: 1, maxLength: 20, description: "Alphanumeric DCV validation value; a random string is generated if omitted." }
+        authKey:      { type: boolean, description: "Use auth key validation for direct issuance." }
+        approver:     { type: object, fieldsRef: Approver, description: "Approver of the certificate." }
+        dcv:          { type: array, itemsRef: Dcv, description: "DCV method per FQDN." }
+        billables:    { type: array, itemsRef: Billable }
     responses:
       "201": { description: "Certificate order created; poll for issuance." }
       "202": { description: "{ processId } \u2014 async issuance via SDK-level workflow." }
@@ -105,6 +121,7 @@ operations:
       - "`period` is MONTHS; industry-standard max is 13."
       - "DV orders allow DCV via EMAIL/DNS/HTTP/HTTPS; OV/EV typically require EMAIL plus organization verification."
       - "CSR `commonName` must match the first SAN."
+      - "`customer` is required by the live API even though it does not appear in the URL. `sans` from earlier spec revisions has been renamed to `san` to match the wire format; `organization` is a flat string here, not an object (unlike `SslOrganization` used elsewhere)."
 
   - operationId: reissueCertificate
     verified: docs
@@ -116,15 +133,31 @@ operations:
     summary: Reissue a certificate with a new CSR or SAN set.
     pathParams:
       - { name: id, type: string, required: true }
+    queryParams:
+      - { name: quote, type: boolean }
     requestBody:
       contentType: application/json
       fields:
-        csr:  { type: string, required: true }
-        sans: { type: array,  items: string }
-        dcv:  { type: array,  itemsRef: Dcv }
+        csr:          { type: string, required: true, description: "A valid Certificate Signing Request." }
+        domainName:   { type: string, minLength: 4, maxLength: 255, description: "Overrides the common name in the CSR; see requiredFields/optionalFields in SSL product metadata." }
+        san:          { type: array, items: string, description: "SAN domains, overrides the alternative names in the CSR. Only applicable for multi-domain certificates. Set to an empty list to exclude the free www/non-www name." }
+        organization: { type: string, minLength: 1, maxLength: 64, description: "Overrides the Organization field in the CSR." }
+        department:   { type: string, minLength: 1, maxLength: 60, description: "Deprecated. Overrides the Organisational Unit field in the CSR." }
+        state:        { type: string, minLength: 1, maxLength: 60, description: "Taken from the CSR when not explicitly passed." }
+        address:      { type: string, minLength: 1, maxLength: 60, description: "See requiredFields/optionalFields in SSL product metadata for supported usage." }
+        postalCode:   { type: string, minLength: 1, maxLength: 10, description: "See requiredFields/optionalFields in SSL product metadata for supported usage." }
+        city:         { type: string, minLength: 1, maxLength: 60, description: "Overrides the City field in the CSR." }
+        coc:          { type: string, minLength: 1, maxLength: 32, description: "Chamber of Commerce identifier." }
+        language:     { type: string, enum: [EN, NL, FR, CN, DE, IT, JP, KR, PT, RU, ES, DK, SE, TR], description: "Preferred language for validations. Defaults based on country; falls back to English if unsupported by the provider." }
+        uniqueValue:  { type: string, minLength: 1, maxLength: 20, description: "Alphanumeric DCV validation value; a random string is generated if omitted." }
+        authKey:      { type: boolean, description: "Use auth key validation for direct issuance." }
+        approver:     { type: object, fieldsRef: Approver, description: "Approver of the certificate." }
+        dcv:          { type: array, itemsRef: Dcv }
     responses:
       "202": { description: "{ processId }" }
     errors: [InvalidParameter, ObjectDoesNotExist]
+    gotchas:
+      - "`sans` from earlier spec revisions has been renamed to `san` to match the wire format."
 
   - operationId: renewCertificate
     verified: docs
@@ -136,13 +169,29 @@ operations:
     summary: Renew an existing certificate.
     pathParams:
       - { name: id, type: string, required: true }
+    queryParams:
+      - { name: quote, type: boolean }
     requestBody:
       contentType: application/json
       fields:
-        period:    { type: integer, required: true, description: "Months." }
-        csr:       { type: string,  required: true }
-        dcv:       { type: array,   itemsRef: Dcv }
-        billables: { type: array,   itemsRef: Billable }
+        product:      { type: string, description: "Product to renew to; defaults to the current product when omitted." }
+        period:       { type: integer, required: true, description: "Validity period in MONTHS." }
+        csr:          { type: string, required: true, description: "A valid Certificate Signing Request." }
+        domainName:   { type: string, minLength: 4, maxLength: 255, description: "Overrides the common name in the CSR; see requiredFields/optionalFields in SSL product metadata." }
+        san:          { type: array, items: string, description: "SAN domains, overrides the alternative names in the CSR. Only applicable for multi-domain certificates. Set to an empty list to exclude the free www/non-www name." }
+        organization: { type: string, minLength: 1, maxLength: 64, description: "Overrides the Organization field in the CSR." }
+        department:   { type: string, minLength: 1, maxLength: 60, description: "Deprecated. Overrides the Organisational Unit field in the CSR." }
+        state:        { type: string, minLength: 1, maxLength: 60, description: "Taken from the CSR when not explicitly passed." }
+        address:      { type: string, minLength: 1, maxLength: 60, description: "See requiredFields/optionalFields in SSL product metadata for supported usage." }
+        postalCode:   { type: string, minLength: 1, maxLength: 10, description: "See requiredFields/optionalFields in SSL product metadata for supported usage." }
+        city:         { type: string, minLength: 1, maxLength: 60, description: "Overrides the City field in the CSR." }
+        coc:          { type: string, minLength: 1, maxLength: 32, description: "Chamber of Commerce identifier." }
+        language:     { type: string, enum: [EN, NL, FR, CN, DE, IT, JP, KR, PT, RU, ES, DK, SE, TR], description: "Preferred language for validations. Defaults based on country; falls back to English if unsupported by the provider." }
+        uniqueValue:  { type: string, minLength: 1, maxLength: 20, description: "Alphanumeric DCV validation value; a random string is generated if omitted." }
+        authKey:      { type: boolean, description: "Use auth key validation for direct issuance." }
+        approver:     { type: object, fieldsRef: Approver, description: "Approver of the certificate." }
+        dcv:          { type: array, itemsRef: Dcv }
+        billables:    { type: array, itemsRef: Billable }
     responses:
       "202": { description: "{ processId }" }
     errors: [InvalidParameter, BillableAcknowledgmentNeededException]
@@ -269,12 +318,13 @@ operations:
     requestBody:
       contentType: application/json
       fields:
-        note: { type: string, required: true, maxLength: 2000 }
+        message: { type: string, required: true, description: "Message which should be sent to the SSL provider." }
     responses:
       "200": { description: "Note stored." }
     errors: [InvalidParameter, ObjectDoesNotExist]
     gotchas:
       - "Marked Deprecated in the live documentation; new integrations should avoid this endpoint."
+      - "The body field is `message`, not `note`."
 
   - operationId: importCertificate
     verified: docs
@@ -287,10 +337,11 @@ operations:
     requestBody:
       contentType: application/json
       fields:
+        customer:    { type: string, required: true, minLength: 3, maxLength: 40, description: "The customer handle." }
         certificate: { type: string, required: true, description: "PEM-encoded certificate (leaf)." }
-        caBundle:    { type: string, description: "PEM-encoded intermediate chain." }
         csr:         { type: string, description: "Original PEM-encoded CSR (if available)." }
-        coverage:    { type: string, description: "Product identifier that the imported cert most closely matches." }
+        coc:         { type: string, minLength: 1, maxLength: 30, description: "Chamber of Commerce identifier." }
+        domainName:  { type: string, minLength: 4, maxLength: 255, description: "Overrides the common name of the certificate; if the certificate's common name differs from this value, it is added as a SAN. Use to choose which SAN becomes the common name for certs issued without one." }
     responses:
       "201": { description: "Certificate imported; `id` returned for subsequent renew/revoke operations." }
     errors: [InvalidParameter]
@@ -321,6 +372,11 @@ operations:
     async: false
     authScope: customer
     summary: Generate a new authKey used for ACME external-account-binding (EAB) or programmatic re-key operations.
+    requestBody:
+      contentType: application/json
+      fields:
+        product: { type: string, required: true, description: "The SSL product." }
+        csr:     { type: string, required: true, description: "The Certificate Signing Request." }
     responses:
       "200": { description: "`{ authKey }` \u2014 store securely; re-generating invalidates prior keys." }
     errors: []
