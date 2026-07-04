@@ -88,6 +88,10 @@ operations:
           type: array
           itemsRef: ContactValidation
           description: "Pre-validation records; requires CONTACT_VALIDATION permission."
+        verifications:
+          type: array
+          itemsRef: ContactVerification
+          description: "Verifications performed for this contact; requires CONTACT_VERIFICATION permission."
     responses:
       "201": { description: "Contact created." }
     errors: [InvalidParameter, ObjectExists, AuthorizationFailed]
@@ -95,6 +99,7 @@ operations:
       - "Contact `handle` is in the URL, not the body."
       - "`voice` must match `\\+[0-9]{1,3}\\.[0-9]{1,14}` (E164a format with a dot)."
       - "`country` must be 2 uppercase letters; the SDK incorrectly accepted `countryCode`."
+      - "Allowed claim/method/proof combinations: https://dm.realtimeregister.com/docs/api/contacts/verification-matrix"
 
   - operationId: updateContact
     verified: docs
@@ -126,11 +131,14 @@ operations:
         disclosedFields: { type: array, items: string, enumRef: DisclosedField }
         validations:     { type: array, itemsRef: ContactValidation,
                            description: "Optional pre-validation records to attach alongside the update." }
+        verifications:   { type: array, itemsRef: ContactVerification,
+                           description: "Verifications performed for this contact; requires CONTACT_VERIFICATION permission." }
     responses:
       "200": { description: "Contact updated." }
     errors: [InvalidParameter, ObjectDoesNotExist]
     gotchas:
       - "Country and state are always publicly disclosed regardless of `disclosedFields`."
+      - "Allowed claim/method/proof combinations: https://dm.realtimeregister.com/docs/api/contacts/verification-matrix"
 
   - operationId: validateContact
     verified: docs

@@ -117,6 +117,7 @@ Create a new contact under the given customer.
 | `fax` | `string` | no |  |
 | `disclosedFields` | `string[]` | no | Fields to disclose in RDAP. `country` and `state` are always public. |
 | `validations` | `ContactValidation[]` | no | Pre-validation records; requires CONTACT_VALIDATION permission. |
+| `verifications` | `ContactVerification[]` | no | Verifications performed for this contact; requires CONTACT_VERIFICATION permission. |
 
 **Responses**
 
@@ -129,6 +130,7 @@ Create a new contact under the given customer.
 - Contact `handle` is in the URL, not the body.
 - `voice` must match `\+[0-9]{1,3}\.[0-9]{1,14}` (E164a format with a dot).
 - `country` must be 2 uppercase letters; the SDK incorrectly accepted `countryCode`.
+- Allowed claim/method/proof combinations: https://dm.realtimeregister.com/docs/api/contacts/verification-matrix
 
 
 ### `updateContact`
@@ -165,6 +167,7 @@ Update mutable contact fields. Omitted fields are preserved.
 | `designatedAgent` | `DesignatedAgent` | no | Requires the DESIGNATED_AGENT permission for any value other than NONE. |
 | `disclosedFields` | `DisclosedField` | no |  |
 | `validations` | `ContactValidation[]` | no | Optional pre-validation records to attach alongside the update. |
+| `verifications` | `ContactVerification[]` | no | Verifications performed for this contact; requires CONTACT_VERIFICATION permission. |
 
 **Responses**
 
@@ -175,6 +178,7 @@ Update mutable contact fields. Omitted fields are preserved.
 **Gotchas**
 
 - Country and state are always publicly disclosed regardless of `disclosedFields`.
+- Allowed claim/method/proof combinations: https://dm.realtimeregister.com/docs/api/contacts/verification-matrix
 
 
 ### `validateContact`

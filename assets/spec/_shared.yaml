@@ -165,6 +165,32 @@ enums:
     description: Usage for which contact properties are being added/updated.
     values: [REGISTRANT, ADMIN, BILLING, TECH]
 
+  VerificationMethod:
+    description: Method used to verify a contact (CONTACT_VERIFICATION permission).
+    values: [REACHABILITY, ELECTRONIC_DOCUMENT, PHYSICAL_DOCUMENT, EID_AUTH, TRANSACTION, DATA]
+
+  VerificationProof:
+    description: Evidence type backing a contact verification.
+    values:
+      - LOG_RECORD
+      - ID_CARD
+      - PASSPORT
+      - POPULATION_REGISTER
+      - RESIDENCE_PERMIT
+      - DRIVERS_LICENCE
+      - COMPANY_REGISTER
+      - COMPANY_STATEMENT
+      - BANK_ACCOUNT
+      - ONLINE_PAYMENT_ACCOUNT
+      - UTILITY_ACCOUNT
+      - BANK_STATEMENT
+      - TAX_STATEMENT
+      - ADDRESS_DATABASE
+
+  VerificationClaim:
+    description: Contact attribute claimed by a verification entry.
+    values: [EMAIL, ADDRESS, ORGANIZATION, NAME, VOICE]
+
   DisclosedField:
     description: RDAP-disclosable contact fields.
     values:
@@ -302,6 +328,18 @@ types:
       termsVersion: { type: string, required: true }
       validatedOn: { type: string, format: "date-time" }
       validatedBy: { type: string, required: true, description: "IP address used during validation." }
+
+  ContactVerification:
+    description: |
+      Verification record for a Contact (CONTACT_VERIFICATION permission). See
+      the allowed claim/method/proof combinations at
+      https://dm.realtimeregister.com/docs/api/contacts/verification-matrix.
+    fields:
+      verificationDate: { type: string, required: true, format: "date-time", description: "The date the contact was verified." }
+      method:  { type: string, required: true, enumRef: VerificationMethod }
+      proof:   { type: string, required: true, enumRef: VerificationProof }
+      claims:  { type: array,  required: true, items: string, enumRef: VerificationClaim, description: "Claims made with this verification." }
+      externalId: { type: string, required: true, maxLength: 255, description: "The ID of the verification you have on file." }
 
   SslOrganization:
     description: Organization details attached to OV/EV certificate orders.
