@@ -209,8 +209,6 @@ operations:
         authcode:         { type: string,  maxLength: 64, description: "Code obtained from the losing registrar. Some TLDs (e.g. .uk) do not require one." }
         autoRenew:        { type: boolean }
         ns:               { type: array,   items: string, maxItems: 10 }
-        transferContacts: { type: array,   items: string, enumRef: TransferContactRole,
-                            description: "Preferred contacts to send the FOA to; may be overruled by TLD policy." }
         designatedAgent:  { type: string,  enumRef: DesignatedAgent }
         zone:             { type: object,  fieldsRef: Zone }
         contacts:         { type: array,   itemsRef: DomainContactRef }

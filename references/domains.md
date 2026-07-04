@@ -324,7 +324,6 @@ Initiate an inbound transfer from another registrar.
 | `authcode` | `string` | no | Code obtained from the losing registrar. Some TLDs (e.g. .uk) do not require one. |
 | `autoRenew` | `boolean` | no |  |
 | `ns` | `string[]` | no |  |
-| `transferContacts` | `TransferContactRole` | no | Preferred contacts to send the FOA to; may be overruled by TLD policy. |
 | `designatedAgent` | `DesignatedAgent` | no |  |
 | `zone` | `Zone` | no |  |
 | `contacts` | `DomainContactRef[]` | no |  |
