@@ -14,6 +14,7 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 - Fixed: createDnsZone now declares billables, so the documented BillableAcknowledgmentNeededException resubmit passes rtr validate.
 - Fixed: getDcvEmails, resendDcv, scheduleValidationCall and sendSubscriberAgreement pointed at nonexistent /v2/ssl/certificates/... paths; corrected to the live process-scoped endpoints.
+- Fixed: field-level reconciliation of 21 operations against live docs — requestCertificate customer/san, generateAuthKey body, contact verifications, brand contact/replyTo emails, ACME update fields, quote/fields query params.
 
 ## [0.2.2] — 2026-04-17
 
