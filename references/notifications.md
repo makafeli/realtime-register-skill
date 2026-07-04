@@ -20,7 +20,7 @@ status, expiry warnings, registry announcements) deliverable via webhook.
 
 ### `getNotification`
 
-`GET /v2/customers/{customer}/notifications/{id}`
+`GET /v2/customers/{customer}/notifications/{notificationId}`
 
 Retrieve a single notification.
 
@@ -32,7 +32,7 @@ Retrieve a single notification.
 | Name | Type | Required | Description |
 | --- | --- | --- | --- |
 | `customer` | `string` | yes |  |
-| `id` | `integer` | yes |  |
+| `notificationId` | `integer` | yes |  |
 
 **Query params**
 
@@ -105,7 +105,7 @@ Poll for the next unacknowledged notification.
 
 ### `ackNotification`
 
-`POST /v2/customers/{customer}/notifications/{id}/ack`
+`POST /v2/customers/{customer}/notifications/{notificationId}/ack`
 
 Acknowledge a notification.
 
@@ -117,7 +117,7 @@ Acknowledge a notification.
 | Name | Type | Required | Description |
 | --- | --- | --- | --- |
 | `customer` | `string` | yes |  |
-| `id` | `integer` | yes |  |
+| `notificationId` | `integer` | yes |  |
 
 **Responses**
 

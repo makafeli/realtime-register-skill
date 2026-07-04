@@ -11,14 +11,14 @@ operations:
   - operationId: getNotification
     verified: docs
     method: GET
-    path: /v2/customers/{customer}/notifications/{id}
+    path: /v2/customers/{customer}/notifications/{notificationId}
     docUrl: /notifications/get
     async: false
     authScope: customer
     summary: Retrieve a single notification.
     pathParams:
-      - { name: customer, type: string, required: true }
-      - { name: id,       type: integer, required: true }
+      - { name: customer,       type: string,  required: true }
+      - { name: notificationId, type: integer, required: true }
     queryParams:
       - { name: fields, type: string, description: "Comma-separated field selector." }
     responses:
@@ -64,14 +64,14 @@ operations:
   - operationId: ackNotification
     verified: docs
     method: POST
-    path: /v2/customers/{customer}/notifications/{id}/ack
+    path: /v2/customers/{customer}/notifications/{notificationId}/ack
     docUrl: /notifications/ack
     async: false
     authScope: customer
     summary: Acknowledge a notification.
     pathParams:
-      - { name: customer, type: string, required: true }
-      - { name: id,       type: integer, required: true }
+      - { name: customer,       type: string,  required: true }
+      - { name: notificationId, type: integer, required: true }
     responses:
       "200": { description: "Notification acknowledged." }
     errors: [ObjectDoesNotExist]
@@ -83,6 +83,7 @@ operations:
     docUrl: /notifications/webhook
     async: false
     authScope: customer
+    liveDiff: false
     summary: Documentation-only. Describes the POST that Realtime Register delivers to a customer-configured webhook URL.
     responses:
       "200": { description: "Any 200/201/202 response marks the delivery as successful and dequeues the notification." }
