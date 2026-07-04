@@ -89,6 +89,7 @@ operations:
     docUrl: /tlds/metadata
     async: false
     authScope: none
+    liveDiff: false
     summary: Human-readable table of every TLD grouped by shared metadata. Not an HTTP endpoint.
     responses:
       "200":

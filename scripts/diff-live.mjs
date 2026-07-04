@@ -29,10 +29,19 @@ const files = readdirSync(specDir)
 
 const drifts = [];
 let checked = 0;
+let skipped = 0;
 
 for (const f of files) {
   const cat = parseYaml(readFileSync(join(specDir, f), "utf8"));
   for (const op of cat.operations ?? []) {
+    // liveDiff: false marks pages that cannot be machine-diffed (WebSocket
+    // docs, webhook description pages, human-readable reference tables, and
+    // REST pages whose method is not present in the DOM). Skip them rather
+    // than let them fire as permanent noise.
+    if (op.liveDiff === false) {
+      skipped += 1;
+      continue;
+    }
     checked += 1;
     const url = base + op.docUrl;
     let scraped;
@@ -88,6 +97,6 @@ for (const f of files) {
   }
 }
 
-const report = { checked, drifts };
+const report = { checked, skipped, drifts };
 console.log(JSON.stringify(report, null, 2));
 process.exit(drifts.length === 0 ? 0 : 1);

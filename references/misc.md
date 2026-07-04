@@ -38,6 +38,10 @@ Check whether an IP is a known proxy/VPN/Tor exit.
 
 **Errors:** `InvalidParameter`
 
+**Gotchas**
+
+- Method verified manually (GET); docs page lacks a machine-readable method span, so it is excluded from the live diff.
+
 
 ### `adacInput`
 
