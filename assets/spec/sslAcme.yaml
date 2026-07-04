@@ -109,12 +109,20 @@ operations:
     summary: Update subscription metadata (e.g. autoRenew, approver, domainNames).
     pathParams:
       - { name: acmeSubscriptionId, type: integer, required: true }
+    queryParams:
+      - { name: quote, type: boolean }
     requestBody:
       contentType: application/json
       fields:
-        domainNames:  { type: array,   items: string }
-        organization: { type: string,  maxLength: 64 }
-        autoRenew:    { type: boolean }
+        domainNames:  { type: array,   items: string, description: "List of domain names." }
+        organization: { type: string,  minLength: 1, maxLength: 64 }
+        country:      { type: string,  minLength: 2, maxLength: 2, enumRef: CountryCode }
+        state:        { type: string,  minLength: 1, maxLength: 60 }
+        address:      { type: string,  minLength: 1, maxLength: 60 }
+        postalCode:   { type: string,  minLength: 1, maxLength: 10 }
+        city:         { type: string,  minLength: 1, maxLength: 60 }
+        autoRenew:    { type: boolean, description: "Automatically renew the subscription." }
+        period:       { type: integer, description: "Validity period to use for auto-renewal of the subscription." }
         approver:     { type: object,  fieldsRef: Approver }
     responses:
       "200": { description: "Subscription updated." }

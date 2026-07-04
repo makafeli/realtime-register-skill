@@ -149,13 +149,25 @@ Update subscription metadata (e.g. autoRenew, approver, domainNames).
 | --- | --- | --- | --- |
 | `acmeSubscriptionId` | `integer` | yes |  |
 
+**Query params**
+
+| Name | Type | Required | Description |
+| --- | --- | --- | --- |
+| `quote` | `boolean` | no |  |
+
 **Request body** (`application/json`)
 
 | Field | Type | Required | Description |
 | --- | --- | --- | --- |
-| `domainNames` | `string[]` | no |  |
+| `domainNames` | `string[]` | no | List of domain names. |
 | `organization` | `string` | no |  |
-| `autoRenew` | `boolean` | no |  |
+| `country` | `CountryCode` | no |  |
+| `state` | `string` | no |  |
+| `address` | `string` | no |  |
+| `postalCode` | `string` | no |  |
+| `city` | `string` | no |  |
+| `autoRenew` | `boolean` | no | Automatically renew the subscription. |
+| `period` | `integer` | no | Validity period to use for auto-renewal of the subscription. |
 | `approver` | `Approver` | no |  |
 
 **Responses**
