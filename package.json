@@ -55,13 +55,13 @@
   },
   "author": "Yasin Boelhouwer <yasin@enginebit.com>",
   "license": "MIT",
-  "homepage": "https://github.com/makafeli/realtime-register#readme",
+  "homepage": "https://github.com/makafeli/realtime-register-skill#readme",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/makafeli/realtime-register.git"
+    "url": "git+https://github.com/makafeli/realtime-register-skill.git"
   },
   "bugs": {
-    "url": "https://github.com/makafeli/realtime-register/issues"
+    "url": "https://github.com/makafeli/realtime-register-skill/issues"
   },
   "dependencies": {
     "@inquirer/prompts": "^7.10.1",
