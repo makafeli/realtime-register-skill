@@ -6,6 +6,10 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+### Security
+
+- Security: resolved high-severity advisories in transitive deps (fast-uri via ajv, undici via cheerio).
+
 ## [0.2.2] — 2026-04-17
 
 ### Fixed
