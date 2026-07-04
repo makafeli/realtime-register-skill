@@ -37,6 +37,11 @@ async function runInstaller(): Promise<void> {
     .option("-f, --force",        "Overwrite an existing installation.")
     .option("-n, --dry-run",      "Print what would happen without writing anything.")
     .option("-y, --yes",          "Do not prompt; pick the default target.")
+    .option(
+      "-p, --pointer <tools>",
+      "Comma-separated pointer tools (junie,copilot,cursor,agentsmd) or 'all'. " +
+        "Writes/updates a sentinel-delimited block in each tool's convention file."
+    )
     .action(installCommand);
 
   program
@@ -45,6 +50,11 @@ async function runInstaller(): Promise<void> {
     .option("-t, --target <dir>", "Target skills directory to remove from.")
     .option("-a, --all",          "Remove from every detected target.")
     .option("-n, --dry-run",      "Print what would happen without deleting anything.")
+    .option(
+      "-p, --pointer <tools>",
+      "Comma-separated pointer tools (junie,copilot,cursor,agentsmd) or 'all' " +
+        "to remove; only our sentinel-delimited block is touched."
+    )
     .action(uninstallCommand);
 
   program

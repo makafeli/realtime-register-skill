@@ -1,6 +1,14 @@
 import { describe, expect, it } from "vitest";
 import { execFileSync } from "node:child_process";
-import { existsSync, mkdtempSync, readdirSync, rmSync, statSync } from "node:fs";
+import {
+  existsSync,
+  mkdtempSync,
+  readdirSync,
+  readFileSync,
+  rmSync,
+  statSync,
+  writeFileSync,
+} from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { fileURLToPath } from "node:url";
@@ -58,6 +66,68 @@ describe("bin/skills.js", () => {
       expect(existsSync(skillDir)).toBe(false);
     } finally {
       rmSync(tmp, { recursive: true, force: true });
+    }
+  });
+
+  it("install --pointer agentsmd creates AGENTS.md with a sentinel block, uninstall removes it", () => {
+    const target = mkdtempSync(join(tmpdir(), "rtr-ptr-target-"));
+    const cwd = mkdtempSync(join(tmpdir(), "rtr-ptr-cwd-"));
+    try {
+      const installed = run(SKILLS_BIN, ["install", "--target", target, "--pointer", "agentsmd"], cwd);
+      expect(installed).toContain("Installed");
+
+      const agentsMd = join(cwd, "AGENTS.md");
+      expect(existsSync(agentsMd)).toBe(true);
+      const content = readFileSync(agentsMd, "utf8");
+      expect(content).toContain("<!-- realtime-register:begin -->");
+      expect(content).toContain("<!-- realtime-register:end -->");
+
+      const removed = run(SKILLS_BIN, ["uninstall", "--target", target, "--pointer", "agentsmd"], cwd);
+      expect(removed).toContain("Removed");
+      expect(existsSync(agentsMd)).toBe(false);
+    } finally {
+      rmSync(target, { recursive: true, force: true });
+      rmSync(cwd, { recursive: true, force: true });
+    }
+  });
+
+  it("preserves surrounding user content in AGENTS.md across install/uninstall of the pointer block", () => {
+    const target = mkdtempSync(join(tmpdir(), "rtr-ptr-target-"));
+    const cwd = mkdtempSync(join(tmpdir(), "rtr-ptr-cwd-"));
+    const agentsMd = join(cwd, "AGENTS.md");
+    const customContent = "# My Custom Instructions\n\nAlways run tests before committing.\n";
+    try {
+      writeFileSync(agentsMd, customContent);
+
+      // No sentinel yet: install must NOT modify the file, only print guidance.
+      const firstInstall = run(SKILLS_BIN, ["install", "--target", target, "--pointer", "agentsmd"], cwd);
+      expect(firstInstall).toContain("Add this to");
+      expect(readFileSync(agentsMd, "utf8")).toBe(customContent);
+
+      // Manually add the block alongside the custom content, as a user following the guidance would.
+      const withBlock =
+        customContent +
+        "\n<!-- realtime-register:begin -->\nplaceholder\n<!-- realtime-register:end -->\n";
+      writeFileSync(agentsMd, withBlock);
+
+      // Re-running install now updates only the sentinel-delimited block.
+      const secondInstall = run(SKILLS_BIN, ["install", "--target", target, "--pointer", "agentsmd", "--force"], cwd);
+      expect(secondInstall).toContain("pointer: updated");
+      const afterUpdate = readFileSync(agentsMd, "utf8");
+      expect(afterUpdate).toContain("# My Custom Instructions");
+      expect(afterUpdate).toContain("Always run tests before committing.");
+      expect(afterUpdate).not.toContain("placeholder");
+
+      // Uninstall removes only the block, preserving the custom content.
+      const removed = run(SKILLS_BIN, ["uninstall", "--target", target, "--pointer", "agentsmd"], cwd);
+      expect(removed).toContain("pointer: removed block from");
+      const afterRemove = readFileSync(agentsMd, "utf8");
+      expect(afterRemove).toContain("# My Custom Instructions");
+      expect(afterRemove).toContain("Always run tests before committing.");
+      expect(afterRemove).not.toContain("realtime-register:begin");
+    } finally {
+      rmSync(target, { recursive: true, force: true });
+      rmSync(cwd, { recursive: true, force: true });
     }
   });
 });

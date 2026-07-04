@@ -22,6 +22,34 @@ describe("candidateTargets", () => {
     expect(targets.length).toBeGreaterThanOrEqual(4);
   });
 
+  it("includes the agentskills.io-standard dir, Gemini CLI, Codex CLI, and project-agents targets", () => {
+    const targets = candidateTargets("/some/cwd");
+    const ids = targets.map((t) => t.id);
+    expect(ids).toContain("agents-standard");
+    expect(ids).toContain("gemini");
+    expect(ids).toContain("codex");
+    expect(ids).toContain("project-agents");
+    for (const id of ["agents-standard", "gemini", "codex", "project-agents"]) {
+      const t = targets.find((x) => x.id === id)!;
+      expect(t.path.endsWith(`/${SKILL_NAME}`)).toBe(true);
+    }
+  });
+
+  it("exposes 8 targets in the documented relative order", () => {
+    const targets = candidateTargets("/some/cwd");
+    const ids = targets.map((t) => t.id);
+    expect(ids).toEqual([
+      "claude-desktop",
+      "claude-code",
+      "agents-standard",
+      "gemini",
+      "codex",
+      "augment",
+      "project-agents",
+      "project-local",
+    ]);
+  });
+
   it("appends SKILL_NAME to every target's install path", () => {
     for (const t of candidateTargets("/some/cwd")) {
       expect(t.path.endsWith(`/${SKILL_NAME}`)).toBe(true);

@@ -53,14 +53,44 @@ The installer auto-detects these targets. When multiple matches exist and
 stdin is a TTY, you'll be prompted to choose one; non-interactive callers
 (CI, `--yes`, piped input) get the first match:
 
-| Client                | Path                                                        |
-| --------------------- | ----------------------------------------------------------- |
-| Claude Desktop (macOS)  | `~/Library/Application Support/Claude/skills/`              |
-| Claude Desktop (Windows) | `%APPDATA%\Claude\skills\`                                  |
-| Claude Desktop (Linux)  | `~/.config/Claude/skills/`                                  |
-| Claude Code CLI         | `~/.claude/skills/`                                         |
-| Augment                 | `~/.augment/skills/`                                        |
-| Local project fallback  | `./skills/`                                                 |
+### Install targets
+
+| id               | Client(s)                                    | Path                                             |
+| ----------------- | --------------------------------------------- | ------------------------------------------------- |
+| `claude-desktop`  | Claude Desktop (macOS/Windows/Linux)          | `~/Library/Application Support/Claude/skills/` (macOS), `%APPDATA%\Claude\skills\` (Windows), `~/.config/Claude/skills/` (Linux) |
+| `claude-code`     | Claude Code CLI                               | `~/.claude/skills/`                                |
+| `agents-standard` | Codex CLI, Gemini CLI, Augment CLI (fallback) | `~/.agents/skills/`                                |
+| `gemini`          | Gemini CLI                                    | `~/.gemini/skills/`                                |
+| `codex`           | Codex CLI — **best effort / undocumented upstream** | `~/.codex/skills/`                           |
+| `augment`         | Augment                                       | `~/.augment/skills/`                               |
+| `project-agents`  | Local project (agentskills.io convention)     | `./.agents/skills/`                                |
+| `project-local`   | Local project fallback                        | `./skills/`                                        |
+
+Tools with no skills mechanism get a **pointer file** via `--pointer` instead
+— a small sentinel-delimited block telling the agent where the skill lives:
+
+| `--pointer` value | Tool     | File                                |
+| ------------------ | -------- | ------------------------------------ |
+| `junie`            | JetBrains Junie | `.junie/AGENTS.md`             |
+| `copilot`          | GitHub Copilot  | `.github/copilot-instructions.md` |
+| `cursor`           | Cursor          | `.cursor/rules/realtime-register.mdc` |
+| `agentsmd`         | ~25 tools reading the [agents.md](https://agents.md) convention | `AGENTS.md` |
+
+```bash
+npx @cave-man/realtime-register-skills install                      # auto-detected skill target
+npx @cave-man/realtime-register-skills install --pointer all        # + every pointer file
+npx @cave-man/realtime-register-skills install --pointer junie,agentsmd
+```
+
+Pointer writes only ever touch the sentinel-delimited block they own; if the
+target file already has unrelated content and no sentinel yet, the installer
+prints the block instead of writing it, so you can add it by hand.
+
+*Verified against official docs on 2026-07-04: developers.openai.com/codex/skills,
+geminicli.com/docs/cli/skills/, docs.augmentcode.com/cli/skills,
+junie.jetbrains.com/docs/guidelines-and-memory.html, docs.github.com,
+cursor.com/docs/context/rules, agents.md. `~/.codex/skills/` is a best-effort
+target — see github.com/openai/codex/issues/14337.*
 
 Override with `--target <dir>` or the `REALTIME_REGISTER_SKILL_DIR` env var.
 Installer subcommands:
@@ -71,6 +101,7 @@ npx @cave-man/realtime-register-skills install --target ./skills   # explicit di
 npx @cave-man/realtime-register-skills install --global            # + npm i -g (rtr on PATH)
 npx @cave-man/realtime-register-skills where                       # list detected targets
 npx @cave-man/realtime-register-skills uninstall                   # remove the skill
+npx @cave-man/realtime-register-skills uninstall --pointer all     # + remove pointer blocks
 ```
 
 ### Install the `rtr` CLI

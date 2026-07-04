@@ -25,6 +25,11 @@ Trigger on any task involving the Realtime Register REST API:
 ## Workflow
 
 1. **Look up the operation.** Use `rtr list` to find an `operationId`, then `rtr describe <operationId>` for the full contract (method, path, fields, errors, gotchas, examples).
+
+   If the `rtr` CLI is not on PATH: run it as
+   `npx -y @cave-man/realtime-register-skills rtr <args>`, or read
+   `references/<category>.md` in this skill directory directly — every
+   operation's contract is fully rendered there.
 2. **Authenticate.** Every request carries `Authorization: ApiKey <your-api-key>`. No other scheme: X-API-KEY does not exist, Basic auth is deprecated, sessions are deprecated.
 3. **Build the request body** following the camelCase wire format \u2014 never snake_case, never kebab-case.
 4. **Validate before sending.** Pipe the JSON payload through `rtr validate <operationId> --body payload.json`. All required fields, enums, and nested objects are checked against the JSON Schema derived from the YAML spec.

@@ -52,9 +52,13 @@ export function candidateTargets(cwd: string = process.cwd()): SkillTarget[] {
   }
 
   raw.push(
-    { id: "claude-code",  label: "Claude Code CLI",      dir: join(home, ".claude", "skills") },
-    { id: "augment",      label: "Augment",              dir: join(home, ".augment", "skills") },
-    { id: "project-local", label: "Local project",        dir: join(cwd, "skills") },
+    { id: "claude-code",     label: "Claude Code CLI",                                          dir: join(home, ".claude", "skills") },
+    { id: "agents-standard", label: "Skills standard (~/.agents) — Codex / Gemini / Augment",    dir: join(home, ".agents", "skills") },
+    { id: "gemini",          label: "Gemini CLI",                                                dir: join(home, ".gemini", "skills") },
+    { id: "codex",           label: "Codex CLI (best effort)",                                   dir: join(home, ".codex", "skills") },
+    { id: "augment",         label: "Augment",                                                   dir: join(home, ".augment", "skills") },
+    { id: "project-agents",  label: "Local project (.agents)",                                   dir: join(cwd, ".agents", "skills") },
+    { id: "project-local",   label: "Local project",                                             dir: join(cwd, "skills") },
   );
 
   return raw.map((t) => ({

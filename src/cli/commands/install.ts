@@ -4,7 +4,16 @@
 // put the `rtr` CLI on PATH.
 
 import { spawnSync } from "node:child_process";
-import { cpSync, existsSync, mkdirSync, readdirSync, rmSync, statSync } from "node:fs";
+import {
+  cpSync,
+  existsSync,
+  mkdirSync,
+  readFileSync,
+  readdirSync,
+  rmSync,
+  statSync,
+  writeFileSync,
+} from "node:fs";
 import { dirname, join } from "node:path";
 import { select } from "@inquirer/prompts";
 import {
@@ -15,6 +24,14 @@ import {
   SKILL_NAME,
   type SkillTarget,
 } from "../../lib/skill-paths.js";
+import {
+  hasSentinel,
+  mergePointer,
+  parsePointerTools,
+  pointerFilePath,
+  renderPointer,
+  type PointerTool,
+} from "../../lib/pointer-files.js";
 
 export interface InstallOptions {
   target?: string;
@@ -23,6 +40,7 @@ export interface InstallOptions {
   link?: boolean;
   dryRun?: boolean;
   yes?: boolean;
+  pointer?: string;
 }
 
 const PACKAGE_NAME = "@cave-man/realtime-register-skills";
@@ -72,6 +90,11 @@ export async function installCommand(opts: InstallOptions): Promise<void> {
   console.log(`  ${destSkill}`);
   console.log(`  target: ${target.label}`);
 
+  const pointerTools = parsePointerTools(opts.pointer);
+  for (const tool of pointerTools) {
+    writePointerFile(tool, destSkill, process.cwd());
+  }
+
   if (opts.global) {
     installGlobalCli();
   } else {
@@ -80,6 +103,40 @@ export async function installCommand(opts: InstallOptions): Promise<void> {
     console.log(`  npx ${PACKAGE_NAME} rtr --help`);
     console.log(`  # or install globally: npx ${PACKAGE_NAME} install --global`);
   }
+}
+
+/**
+ * Create or update a pointer file for `tool`, pointing at `skillPath`.
+ * - File absent: create it (mkdir -p parent) with the rendered block.
+ * - File present without our sentinel: never touch it; print the block for
+ *   the user to add manually.
+ * - File present with our sentinel: replace only the sentinel-delimited
+ *   range, leaving the rest of the file byte-identical.
+ */
+function writePointerFile(tool: PointerTool, skillPath: string, cwd: string): void {
+  const filePath = pointerFilePath(tool, cwd);
+  const rendered = renderPointer(tool, skillPath);
+
+  if (!existsSync(filePath)) {
+    mkdirSync(dirname(filePath), { recursive: true });
+    writeFileSync(filePath, rendered);
+    console.log(`  pointer: created ${filePath}`);
+    return;
+  }
+
+  const existingContent = readFileSync(filePath, "utf8");
+  if (!hasSentinel(existingContent)) {
+    console.log("");
+    console.log(`Add this to ${filePath} manually:`);
+    console.log(rendered);
+    return;
+  }
+
+  const merged = mergePointer(existingContent, rendered);
+  if (merged !== existingContent) {
+    writeFileSync(filePath, merged);
+  }
+  console.log(`  pointer: updated ${filePath}`);
 }
 
 /** Decide which SkillTarget to install into. */
@@ -149,6 +206,10 @@ function printPlan(target: SkillTarget, opts: InstallOptions): void {
   console.log(`  path:   ${target.path}`);
   for (const entry of skillPayload()) {
     console.log(`    ${entry.kind === "dir" ? "dir " : "file"}  ${entry.src}  ->  ${join(target.path, entry.dest)}`);
+  }
+  const pointerTools = parsePointerTools(opts.pointer);
+  for (const tool of pointerTools) {
+    console.log(`  pointer: ${pointerFilePath(tool, process.cwd())}`);
   }
   if (opts.global) console.log(`  then: npm install -g ${PACKAGE_NAME}`);
 }
