@@ -113,6 +113,8 @@ Create a brand under a customer.
 | `state` | `string` | no |  |
 | `country` | `CountryCode` | yes |  |
 | `email` | `string` | yes |  |
+| `contactEmail` | `string` | no | Contact email address. |
+| `replyToEmail` | `string` | no | Reply-to email address. |
 | `voice` | `string` | yes | Voice telephone number (E.164 without separator required by some registries). |
 | `fax` | `string` | no |  |
 | `contactUrl` | `string` | no | URL for the brand's contact page. |
@@ -160,6 +162,8 @@ Update a brand. Fields accept an empty string to clear where noted.
 | `state` | `string` | no | Pass an empty string to remove. |
 | `country` | `CountryCode` | no |  |
 | `email` | `string` | no |  |
+| `contactEmail` | `string` | no | Contact email address. |
+| `replyToEmail` | `string` | no | Reply-to email address. |
 | `voice` | `string` | no |  |
 | `fax` | `string` | no | Pass an empty string to remove. |
 | `contactUrl` | `string` | no |  |
@@ -224,6 +228,7 @@ Retrieve a brand-specific notification/mail template override.
 | Name | Type | Required | Description |
 | --- | --- | --- | --- |
 | `locale` | `string` | no |  |
+| `fields` | `string` | no | Comma-separated field selector. |
 
 **Responses**
 
@@ -286,8 +291,7 @@ Create or update a brand template override. Omit a field to inherit the platform
 
 | Field | Type | Required | Description |
 | --- | --- | --- | --- |
-| `locale` | `string` | yes |  |
-| `subject` | `string` | no |  |
+| `subject` | `string` | no | The subject, for mail templates. |
 | `text` | `string` | no | Plain-text body with `{{placeholder}}` variables. |
 | `html` | `string` | no | HTML body with `{{placeholder}}` variables. |
 
@@ -300,6 +304,7 @@ Create or update a brand template override. Omit a field to inherit the platform
 **Gotchas**
 
 - Sending empty strings clears the override for that locale; sending null is rejected.
+- The `template` path parameter already scopes the override to a single locale-neutral template name; the live body table has no separate `locale` field.
 
 
 ### `previewBrandTemplate`
@@ -318,6 +323,12 @@ Render a template with sample data to preview the rendered subject/body.
 | `customer` | `string` | yes |  |
 | `handle` | `string` | yes |  |
 | `template` | `string` | yes |  |
+
+**Query params**
+
+| Name | Type | Required | Description |
+| --- | --- | --- | --- |
+| `context` | `string` | no | The context to request a preview for. |
 
 **Request body** (`application/json`)
 

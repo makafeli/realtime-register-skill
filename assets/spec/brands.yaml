@@ -72,6 +72,8 @@ operations:
         state:             { type: string,  minLength: 1, maxLength: 255 }
         country:           { type: string,  required: true, minLength: 2, maxLength: 2, enumRef: CountryCode }
         email:             { type: string,  required: true, format: email }
+        contactEmail:      { type: string,  format: email, description: "Contact email address." }
+        replyToEmail:      { type: string,  format: email, description: "Reply-to email address." }
         voice:             { type: string,  required: true, minLength: 6, maxLength: 25, description: "Voice telephone number (E.164 without separator required by some registries)." }
         fax:               { type: string,  minLength: 6, maxLength: 25 }
         contactUrl:        { type: string,  maxLength: 255, description: "URL for the brand's contact page." }
@@ -107,6 +109,8 @@ operations:
         state:             { type: string, maxLength: 255, description: "Pass an empty string to remove." }
         country:           { type: string, minLength: 2, maxLength: 2, enumRef: CountryCode }
         email:             { type: string, format: email }
+        contactEmail:      { type: string, format: email, description: "Contact email address." }
+        replyToEmail:      { type: string, format: email, description: "Reply-to email address." }
         voice:             { type: string, minLength: 6, maxLength: 25 }
         fax:               { type: string, maxLength: 25, description: "Pass an empty string to remove." }
         contactUrl:        { type: string, maxLength: 255 }
@@ -150,6 +154,7 @@ operations:
           description: "Template identifier (e.g. TRANSFER_FOA, CONTACT_VERIFICATION)." }
     queryParams:
       - { name: locale, type: string, example: "en_US" }
+      - { name: fields, type: string, description: "Comma-separated field selector." }
     responses:
       "200": { description: "Template object with `subject`, `text`, `html`, `locale`." }
     errors: [ObjectDoesNotExist]
@@ -190,8 +195,7 @@ operations:
     requestBody:
       contentType: application/json
       fields:
-        locale:  { type: string, required: true, example: "en_US" }
-        subject: { type: string, maxLength: 255 }
+        subject: { type: string, maxLength: 255, description: "The subject, for mail templates." }
         text:    { type: string, description: "Plain-text body with `{{placeholder}}` variables." }
         html:    { type: string, description: "HTML body with `{{placeholder}}` variables." }
     responses:
@@ -199,6 +203,7 @@ operations:
     errors: [InvalidParameter, ObjectDoesNotExist]
     gotchas:
       - "Sending empty strings clears the override for that locale; sending null is rejected."
+      - "The `template` path parameter already scopes the override to a single locale-neutral template name; the live body table has no separate `locale` field."
 
   - operationId: previewBrandTemplate
     verified: docs
@@ -212,6 +217,8 @@ operations:
       - { name: customer, type: string, required: true }
       - { name: handle,   type: string, required: true }
       - { name: template, type: string, required: true }
+    queryParams:
+      - { name: context, type: string, description: "The context to request a preview for." }
     requestBody:
       contentType: application/json
       fields:
