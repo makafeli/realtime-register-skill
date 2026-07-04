@@ -69,11 +69,14 @@ operations:
   - operationId: getExchangeRates
     verified: docs
     method: GET
-    path: /v2/billing/exchangerates
+    path: /v2/exchangerates/{currency}
     docUrl: /exchangerates
     async: false
     authScope: customer
     summary: Retrieve the exchange-rate set for a specific date (defaults to latest).
+    pathParams:
+      - { name: currency, type: string, required: true,
+          description: "The ISO 4217 alphabetic currency code (EUR or USD)." }
     queryParams:
       - { name: date, type: string, format: date,
           description: "Effective date (YYYY-MM-DD). Defaults to today." }
@@ -91,7 +94,7 @@ operations:
   - operationId: listExchangeRates
     verified: docs
     method: GET
-    path: /v2/billing/exchangerates/list
+    path: /v2/exchangerates
     docUrl: /exchangerates/list
     async: false
     authScope: customer

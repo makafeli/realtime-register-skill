@@ -96,12 +96,18 @@ List financial transactions.
 
 ### `getExchangeRates`
 
-`GET /v2/billing/exchangerates`
+`GET /v2/exchangerates/{currency}`
 
 Retrieve the exchange-rate set for a specific date (defaults to latest).
 
 - **Docs:** `https://dm.realtimeregister.com/docs/api/exchangerates`
 - **Auth scope:** `customer`
+
+**Path params**
+
+| Name | Type | Required | Description |
+| --- | --- | --- | --- |
+| `currency` | `string` | yes | The ISO 4217 alphabetic currency code (EUR or USD). |
 
 **Query params**
 
@@ -126,7 +132,7 @@ are quoted today.
 
 ### `listExchangeRates`
 
-`GET /v2/billing/exchangerates/list`
+`GET /v2/exchangerates`
 
 List historical exchange rates across a date range.
 
