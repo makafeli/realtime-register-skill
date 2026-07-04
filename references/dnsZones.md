@@ -107,12 +107,13 @@ Create an unmanaged or template-linked DNS zone.
 | `expire` | `integer` | no |  |
 | `ttl` | `integer` | no |  |
 | `records` | `DnsRecord[]` | no |  |
+| `billables` | `Billable[]` | no | Copy verbatim from BillableAcknowledgmentNeededException and re-submit. |
 
 **Responses**
 
 - `201` — Zone created; response includes `id`.
 
-**Errors:** `InvalidParameter`, `DnsConfigurationException`, `ObjectExists`
+**Errors:** `InvalidParameter`, `DnsConfigurationException`, `ObjectExists`, `BillableAcknowledgmentNeededException`
 
 **Gotchas**
 

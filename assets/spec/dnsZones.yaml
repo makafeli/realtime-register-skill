@@ -73,9 +73,10 @@ operations:
         expire:     { type: integer, default: 1209600, minimum: 86400, maximum: 4838400 }
         ttl:        { type: integer, default: 3600, minimum: 60, maximum: 2419200 }
         records:    { type: array, itemsRef: DnsRecord }
+        billables:  { type: array, itemsRef: Billable, description: "Copy verbatim from BillableAcknowledgmentNeededException and re-submit." }
     responses:
       "201": { description: "Zone created; response includes `id`." }
-    errors: [InvalidParameter, DnsConfigurationException, ObjectExists]
+    errors: [InvalidParameter, DnsConfigurationException, ObjectExists, BillableAcknowledgmentNeededException]
     gotchas:
       - "Set `link: false` when cloning from a template but intending to diverge."
       - "`prio` is required on MX and SRV records."
