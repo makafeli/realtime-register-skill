@@ -8,6 +8,7 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Added
 
+- Added: rtr describe --format json (machine-readable operation contract incl. derived JSON Schemas and auth block).
 - Added: authentication contract (ApiKey header) in _shared.yaml, SKILL.md, and all generated references; Basic/session auth flagged deprecated.
 - Added: spec audit now validates method/type/path values, enforces the billable invariant, and verifies a fidelity fingerprint lock (assets/spec/_fingerprints.json).
 - Added: test coverage for schema derivation (all-operations Ajv compile gate), reference generation (committed-references sync check), the validate CLI, and loader error paths.
