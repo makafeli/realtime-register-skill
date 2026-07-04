@@ -24,6 +24,7 @@ program
 program
   .command("describe <operationId>")
   .description("Print the full reference entry for an operation.")
+  .option("-f, --format <format>", "human or json", "human")
   .action(describeCommand);
 
 program
