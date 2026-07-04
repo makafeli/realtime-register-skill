@@ -23,6 +23,10 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 - Fixed: weekly drift check now actually compares required body fields; scraper surfaces parse failures instead of defaulting to GET.
 - Fixed: 24 path/method corrections from the first real live-docs diff (revoke/cancel are DELETE, exchangerates/registryAccounts/import/authkey paths, param renames); non-diffable doc pages now marked liveDiff: false.
 
+### Security
+
+- Security: resolved high-severity advisories in transitive deps (fast-uri via ajv, undici via cheerio).
+
 ## [0.2.2] — 2026-04-17
 
 ### Fixed
