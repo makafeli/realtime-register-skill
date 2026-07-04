@@ -23,18 +23,27 @@ One package, two audiences:
 
 ## Highlights
 
-- **100 % fidelity** — all 109 operations carry `verified: docs` (path, URL
-  params, query params, and request-body fields reconciled against the live
-  HTML). See [`docs/fidelity.md`](docs/fidelity.md).
+- **Machine-verified fidelity** — all 109 operations carry `verified: docs`,
+  the full live-docs diff reports **zero drifts**, and a committed
+  fingerprint lock (`assets/spec/_fingerprints.json`) turns the audit red if
+  any verified contract is edited without re-verification. See
+  [`docs/fidelity.md`](docs/fidelity.md).
+- **The auth contract is part of the skill** — every reference file and
+  `SKILL.md` state it: `Authorization: ApiKey <key>`, never `X-API-KEY`,
+  never Basic (deprecated upstream), never session keys.
 - **Runtime validation** — JSON Schemas derived from the YAML, evaluated by
   `ajv` with format checks for `email`, `uri`, `date`, `date-time`, `ipv4`,
-  `ipv6`.
+  `ipv6`. `rtr describe <op> --format json` emits the same schemas for
+  programmatic consumers.
 - **Agent-first docs** — `SKILL.md` + `references/<category>.md` are the only
   files an LLM needs to load; they are terse, structured, and stable.
 - **Zero-surprise CLI** — six subcommands, no config files, no env vars, no
   network access except `doctor` and `scrape`.
 - **CamelCase everywhere** — matches the official TypeScript SDK and the
   on-the-wire protocol.
+- **136 tests** guard the pipeline: an Ajv compile gate across every
+  operation, a byte-exact sync check between the YAML and the generated
+  references, CLI behavior tests, and scraper fixtures.
 
 ---
 
@@ -118,7 +127,8 @@ rtr --help
 ### Describe an operation
 
 ```bash
-rtr describe createDomain
+rtr describe createDomain                 # human-readable contract
+rtr describe createDomain --format json   # machine-readable: op + auth + JSON Schemas
 ```
 
 ### Validate a request body before sending
@@ -167,7 +177,7 @@ Two binaries ship in this package:
 | Command                                         | Purpose                                                                          |
 | ----------------------------------------------- | -------------------------------------------------------------------------------- |
 | `rtr list [--category <name>]`                  | List all operations or one category.                                             |
-| `rtr describe <operationId>`                    | Full contract for one operation: path, params, body, errors, gotchas, examples.  |
+| `rtr describe <operationId> [--format json]`   | Full contract for one operation: path, params, body, errors, gotchas, examples. `--format json` adds derived JSON Schemas + the auth block. |
 | `rtr validate <operationId> --body <file.json>` | Validate a request body, query, or path params against the schema.               |
 | `rtr generate [--category <name>]`              | Render `references/<category>.md` from the YAML.                                 |
 | `rtr scrape <operationId>`                      | Fetch the live HTML doc for an operation; print a spec skeleton.                 |
@@ -203,9 +213,9 @@ assets/spec/
 ```
 
 Each operation carries `operationId`, `method`, `path`, `docUrl`, `async`,
-`authScope`, `deprecated`, `verified`, `pathParams`, `queryParams`,
-`requestBody.fields`, `responses`, `errors`, `gotchas`, and `examples`. Full
-schema in [`docs/spec-format.md`](docs/spec-format.md).
+`authScope`, `deprecated`, `verified`, `liveDiff`, `pathParams`,
+`queryParams`, `requestBody.fields`, `responses`, `errors`, `gotchas`, and
+`examples`. Full schema in [`docs/spec-format.md`](docs/spec-format.md).
 
 ---
 
@@ -216,11 +226,14 @@ into your agent's system context along with the relevant
 `references/<category>.md` file(s). A typical flow:
 
 1. Agent receives user request ("renew example.com for two years").
-2. Agent loads `SKILL.md` → learns the hard rules (camelCase, `period` in
-   months, async polling, billable acknowledgment).
-3. Agent loads `references/domains.md` → finds the `renewDomain` entry.
+2. Agent loads `SKILL.md` → learns the hard rules (auth is
+   `Authorization: ApiKey <key>` — never `X-API-KEY`, never Basic; camelCase;
+   `period` in months; async polling; billable acknowledgment).
+3. Agent loads `references/domains.md` → finds the `renewDomain` entry (every
+   reference file opens with the Authentication section).
 4. Agent builds the payload and calls `rtr validate renewDomain --body …`
-   before issuing the HTTP request.
+   before issuing the HTTP request — or reads the machine contract via
+   `rtr describe renewDomain --format json`.
 5. On HTTP 202, agent polls `/v2/processes/{processId}` via the `processes`
    category.
 
@@ -239,7 +252,13 @@ Every operation declares a `verified` marker:
 - **`sdk`** — derived from the public TypeScript SDK and the navigation slug
   only; no HTML-level reconciliation yet.
 
-**As of v0.1.0, all 109 operations carry `verified: docs`.** Promotion
+**As of v0.3.0, all 109 operations carry `verified: docs`, re-verified
+field-by-field against a full crawl of the live documentation** — and the
+claim is machine-enforced from here on: a committed fingerprint lock
+(`assets/spec/_fingerprints.json`) fails the audit if a verified contract is
+edited without re-verification, and the weekly drift job diffs every
+operation's method, path, and required fields against the live pages
+(non-machine-readable doc pages are marked `liveDiff: false`). Promotion
 workflow, drift policy, and enforcement tooling are documented in
 [`docs/fidelity.md`](docs/fidelity.md).
 

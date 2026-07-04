@@ -27,7 +27,8 @@ through `grep`/`awk` for scripted use.
 Print the full contract for a single operation:
 
 ```bash
-rtr describe registerDomain
+rtr describe createDomain                 # human-readable
+rtr describe createDomain --format json   # machine-readable
 ```
 
 Includes method, path, path params, query params, request-body fields (with
@@ -35,14 +36,21 @@ types, required flags, enums, nested objects), response descriptions, declared
 error codes, gotchas, and worked examples. Use this as the authoritative
 pre-flight reference before issuing a request.
 
+With `--format json` (alias `-f json`) the output is a single pure-JSON
+document on stdout: the operation entry, the fully-qualified `docUrl`, the
+shared `auth` contract, and the derived JSON Schemas
+(`schemas.body` / `schemas.query` / `schemas.path`, ajv draft-07 compatible).
+Built for MCP bridges and other tooling — no second call needed to obtain the
+validation schemas.
+
 ## `rtr validate <operationId>`
 
 Validate a prospective request against the JSON Schema derived from the YAML.
 
 ```bash
-rtr validate registerDomain --body payload.json
-rtr validate listDomains    --query query.json
-rtr validate getDomain      --path-params path.json
+rtr validate createDomain --body payload.json
+rtr validate listDomains  --query query.json
+rtr validate getDomain    --path-params path.json
 ```
 
 The validator uses [`ajv`](https://ajv.js.org/) with `ajv-formats` for
@@ -52,8 +60,8 @@ combined; each file is checked independently.
 **Exit codes**
 
 - `0` — payload passes schema.
-- `1` — schema violation; errors printed as AJV messages.
-- `2` — unknown `operationId` or missing file.
+- `1` — schema violation (errors printed as AJV messages), unknown
+  `operationId`, or unreadable payload file.
 
 ## `rtr generate`
 
@@ -76,7 +84,7 @@ derived from the page's `URL fields`, `Request parameters`, and
 needs re-reconciling.
 
 ```bash
-rtr scrape registerDomain
+rtr scrape createDomain
 ```
 
 Output is diff-ready against the corresponding YAML entry. Nothing is written
@@ -96,11 +104,10 @@ every release.
 
 ## Exit codes summary
 
-| Code | Meaning                                      |
-| ---- | -------------------------------------------- |
-| `0`  | Success                                      |
-| `1`  | Validation or doctor failure                 |
-| `2`  | Bad invocation (unknown op, missing file)    |
+| Code | Meaning                                                          |
+| ---- | ---------------------------------------------------------------- |
+| `0`  | Success                                                          |
+| `1`  | Any failure: schema violation, doctor non-200, unknown operation, unreadable file |
 
 ## Environment
 

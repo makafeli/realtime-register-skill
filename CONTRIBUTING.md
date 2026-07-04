@@ -18,7 +18,7 @@ pull request.
 ## Development setup
 
 ```bash
-git clone https://github.com/makafeli/realtime-register.git
+git clone https://github.com/makafeli/realtime-register-skill.git
 cd realtime-register
 npm install
 npm run build

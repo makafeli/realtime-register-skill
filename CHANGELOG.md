@@ -6,30 +6,96 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+### Changed
+
+- **Publishing switched to npm trusted publishing (OIDC)** with Sigstore
+  provenance — no npm tokens in CI; the release workflow authenticates
+  directly from GitHub Actions.
+- **Repository URLs updated** to the renamed GitHub repo
+  (`makafeli/realtime-register-skill`) in `package.json` and all docs.
+- **Documentation refresh** — README, `docs/cli.md`, `docs/fidelity.md`, and
+  `docs/spec-format.md` brought in line with the 0.3.0 feature set; corrected
+  two long-standing doc errors (`rtr validate` exits `1`, never `2`; the spec
+  format uses `enumRef`/`fieldsRef`/`itemsRef` and `fields:` mappings, not
+  `ref:`/`properties:` lists).
+
 ## [0.3.0] — 2026-07-04
+
+The trust-but-verify release: a full audit against the live Realtime Register
+documentation, machine-enforced fidelity from here on, and installation into
+every major agent tool.
 
 ### Added
 
-- Added: rtr describe --format json (machine-readable operation contract incl. derived JSON Schemas and auth block).
-- Added: authentication contract (ApiKey header) in _shared.yaml, SKILL.md, and all generated references; Basic/session auth flagged deprecated.
-- Added: spec audit now validates method/type/path values, enforces the billable invariant, and verifies a fidelity fingerprint lock (assets/spec/_fingerprints.json).
-- Added: test coverage for schema derivation (all-operations Ajv compile gate), reference generation (committed-references sync check), the validate CLI, and loader error paths.
-- Added: skill install targets for the agentskills.io standard dir (Codex/Gemini/Augment), Gemini CLI, Codex CLI; --pointer generates .junie/AGENTS.md, .github/copilot-instructions.md, .cursor/rules/*.mdc and AGENTS.md pointer blocks; SKILL.md documents the npx fallback when rtr is not on PATH.
-- Added: npm run verify one-command gate; AGENTS.md/CLAUDE.md for agent contributors.
+- **Authentication contract, everywhere.** `_shared.yaml` now carries the
+  auth rules — `Authorization: ApiKey <key>`, never `X-API-KEY`, Basic and
+  session auth deprecated upstream — and every generated
+  `references/<category>.md` opens with an Authentication section. `SKILL.md`
+  leads its hard rules with the same contract, so agents can no longer guess
+  wrong.
+- **Fidelity fingerprint lock** (`assets/spec/_fingerprints.json`). The spec
+  audit now validates method/path/field-type values, enforces the
+  billables-field invariant on billable operations, and fails whenever a
+  `verified: docs` operation's contract changes without re-verification.
+  After a deliberate, re-verified edit:
+  `node scripts/audit-refs.mjs --update-lock`.
+- **`rtr describe <operationId> --format json`** — the full machine-readable
+  operation contract on stdout, including the derived JSON Schemas (body,
+  query, path) and the auth block. Built for MCP bridges and other tooling.
+- **Multi-tool skill install.** New targets: `~/.agents/skills` (the
+  agentskills.io standard read by Codex CLI, Gemini CLI, and Augment),
+  `~/.gemini/skills`, `~/.codex/skills` (best effort), and `./.agents/skills`.
+  A new `install --pointer` flag writes sentinel-delimited pointer blocks for
+  JetBrains Junie (`.junie/AGENTS.md`), GitHub Copilot
+  (`.github/copilot-instructions.md`), Cursor
+  (`.cursor/rules/realtime-register.mdc`), and the
+  [agents.md](https://agents.md) convention. `SKILL.md` documents the npx
+  fallback for when `rtr` is not on PATH.
+- **Test suite grew from 22 to 136 tests**, including an Ajv compile gate
+  across all 109 operations, a byte-exact sync check between the generator
+  and the committed references (editing YAML without regenerating now fails
+  CI), CLI behavior tests, HTML-fixture scraper tests, and loader error paths.
+- **`npm run verify`** — one-command build + lint + test + audit gate — plus
+  `AGENTS.md`/`CLAUDE.md` contributor guides for coding agents.
 
 ### Fixed
 
-- Fixed: createDnsZone now declares billables, so the documented BillableAcknowledgmentNeededException resubmit passes rtr validate.
-- Fixed: getDcvEmails, resendDcv, scheduleValidationCall and sendSubscriberAgreement pointed at nonexistent /v2/ssl/certificates/... paths; corrected to the live process-scoped endpoints.
-- Fixed: field-level reconciliation of 21 operations against live docs — requestCertificate customer/san, generateAuthKey body, contact verifications, brand contact/replyTo emails, ACME update fields, quote/fields query params.
-- Fixed: weekly drift check now actually compares required body fields; scraper surfaces parse failures instead of defaulting to GET.
-- Fixed: 24 path/method corrections from the first real live-docs diff (revoke/cancel are DELETE, exchangerates/registryAccounts/import/authkey paths, param renames); non-diffable doc pages now marked liveDiff: false.
-- Fixed: downloadCertificate path/pathParams renamed {id} → {certificateId} to match the live docs page's URL-fields table.
-- Fixed: getBrandTemplate no longer declares a nonexistent locale query param; live docs only list fields.
+- **33 operations corrected against the live documentation** after a full
+  crawl of all 136 doc pages. Highlights:
+  - `revokeCertificate` and `cancelProcess` are `DELETE` on the bare resource;
+    the spec sent `POST` to nonexistent `/revoke` and `/cancel` paths.
+  - Four SSL actions (`getDcvEmails`, `resendDcv`, `scheduleValidationCall`,
+    `sendSubscriberAgreement`) pointed at invented
+    `/v2/ssl/certificates/…` paths; corrected to the live process-scoped
+    endpoints (`/v2/processes/{processId}/…`) and
+    `/v2/ssl/dcvemailaddresslist/{domainName}`.
+  - `requestCertificate` was missing the **required `customer` field** and
+    named the SAN list `sans` instead of `san`; `generateAuthKey` had an
+    empty request body (live requires `product` + `csr`); `addNote` sent
+    `note` instead of the required `message`.
+  - Contacts gained the upstream `verifications` feature, brands gained
+    `contactEmail`/`replyToEmail`, ACME update gained its address/period
+    fields, and `quote`/`fields` query params were added where documented.
+  - Path-template/parameter renames to match the live URL-fields tables
+    (`{id}` → `{certificateId}`/`{notificationId}`, `{handle}` → `{brand}`,
+    exchangerates/registryAccounts/import/authkey paths,
+    `retrieveDnsZone` is POST, `previewBrandTemplate` is GET).
+  - `createDnsZone` now declares `billables`, so the documented
+    `BillableAcknowledgmentNeededException` resubmit passes `rtr validate`.
+- **The weekly drift check actually works now.** Its required-field
+  comparison had never run (dead code path), URL extraction silently returned
+  empty strings, and unparseable methods defaulted to `GET` — so path and
+  method drift went undetected. The scraper now follows the 2026-07 docs
+  markup (reads the `#method` DOM element), surfaces parse failures as
+  `kind: "parse"` drifts, and non-machine-diffable doc pages (ADAC WebSocket,
+  webhook, metadata overview) are marked `liveDiff: false` and skipped.
+  Verified end state: the full live diff reports **zero drifts** across all
+  checkable operations.
 
 ### Security
 
-- Security: resolved high-severity advisories in transitive deps (fast-uri via ajv, undici via cheerio).
+- Resolved high-severity advisories in transitive dependencies (fast-uri via
+  ajv, undici via cheerio).
 
 ## [0.2.2] — 2026-04-17
 
@@ -169,9 +235,9 @@ First public release.
 | `providers`     | 7   | Providers + gateway-only registry accounts          |
 | `misc`          | 5   | IsProxy + 4 ADAC WebSocket actions                  |
 
-[Unreleased]: https://github.com/makafeli/realtime-register/compare/v0.3.0...HEAD
-[0.3.0]: https://github.com/makafeli/realtime-register/compare/v0.2.2...v0.3.0
-[0.2.2]: https://github.com/makafeli/realtime-register/releases/tag/v0.2.2
-[0.2.1]: https://github.com/makafeli/realtime-register/releases/tag/v0.2.1
-[0.2.0]: https://github.com/makafeli/realtime-register/releases/tag/v0.2.0
-[0.1.0]: https://github.com/makafeli/realtime-register/releases/tag/v0.1.0
+[Unreleased]: https://github.com/makafeli/realtime-register-skill/compare/v0.3.0...HEAD
+[0.3.0]: https://github.com/makafeli/realtime-register-skill/compare/v0.2.2...v0.3.0
+[0.2.2]: https://github.com/makafeli/realtime-register-skill/releases/tag/v0.2.2
+[0.2.1]: https://github.com/makafeli/realtime-register-skill/releases/tag/v0.2.1
+[0.2.0]: https://github.com/makafeli/realtime-register-skill/releases/tag/v0.2.0
+[0.1.0]: https://github.com/makafeli/realtime-register-skill/releases/tag/v0.1.0

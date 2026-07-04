@@ -1,7 +1,7 @@
 # Handover — `realtime-register`
 
 Last updated: **2026-07-04** · Savepoint: **v0.3.0** · Repo:
-<https://github.com/makafeli/realtime-register> · npm:
+<https://github.com/makafeli/realtime-register-skill> · npm:
 <https://www.npmjs.com/package/@cave-man/realtime-register-skills>
 
 This document is the canonical technical memory for the project. It is written
@@ -191,7 +191,7 @@ realtime-register/
 Requirements: **Node.js 20.11+**, npm, git.
 
 ```bash
-git clone https://github.com/makafeli/realtime-register.git
+git clone https://github.com/makafeli/realtime-register-skill.git
 cd realtime-register
 npm install
 npm run build     # tsc → dist/
@@ -594,7 +594,7 @@ roughly descending priority.
 
 1. **Flip CI-driven publishing on.** Add a repo secret `NPM_TOKEN` (npm
    Automation token) at
-   `https://github.com/makafeli/realtime-register/settings/secrets/actions`.
+   `https://github.com/makafeli/realtime-register-skill/settings/secrets/actions`.
    The next `v*.*.*` tag will then auto-publish with Sigstore provenance
    (instead of manual `npm publish`). The guard is already in
    `release.yml`; no workflow changes needed.
@@ -657,7 +657,7 @@ roughly descending priority.
 
 | Attribute        | Value                                                    |
 | ---------------- | -------------------------------------------------------- |
-| Repo             | <https://github.com/makafeli/realtime-register>          |
+| Repo             | <https://github.com/makafeli/realtime-register-skill>          |
 | Default branch   | `main`                                                   |
 | Current HEAD     | see `git log -1 --oneline`                               |
 | Licence          | MIT                                                      |
@@ -725,4 +725,4 @@ roughly descending priority.
 ---
 
 *End of handover. Questions, open issues, and drift reports go to
-<https://github.com/makafeli/realtime-register/issues>.*
+<https://github.com/makafeli/realtime-register-skill/issues>.*
