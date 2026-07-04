@@ -224,7 +224,7 @@ operations:
   - operationId: pushTransferDomain
     verified: docs
     method: POST
-    path: /v2/domains/{domainName}/push
+    path: /v2/domains/{domainName}/transfer/push
     docUrl: /domains/pushtransfer
     async: true
     authScope: customer

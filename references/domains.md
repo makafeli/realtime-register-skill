@@ -344,7 +344,7 @@ Initiate an inbound transfer from another registrar.
 
 ### `pushTransferDomain`
 
-`POST /v2/domains/{domainName}/push`  _async_
+`POST /v2/domains/{domainName}/transfer/push`  _async_
 
 Push a domain to another customer within RTR.
 

@@ -210,7 +210,7 @@ Query traffic counters for a managed zone.
 
 ### `retrieveDnsZone`
 
-`GET /v2/dns/zones/{zoneId}/retrieve`
+`POST /v2/dns/zones/{zoneId}/retrieve`
 
 Re-fetch zone contents from the configured master (secondary zones).
 
