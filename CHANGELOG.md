@@ -6,6 +6,11 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+## [0.3.1] — 2026-07-04
+
+Docs-only release so the npm package page reflects the 0.3.0 feature set.
+No code or spec changes.
+
 ### Changed
 
 - **Publishing switched to npm trusted publishing (OIDC)** with Sigstore
@@ -235,7 +240,8 @@ First public release.
 | `providers`     | 7   | Providers + gateway-only registry accounts          |
 | `misc`          | 5   | IsProxy + 4 ADAC WebSocket actions                  |
 
-[Unreleased]: https://github.com/makafeli/realtime-register-skill/compare/v0.3.0...HEAD
+[Unreleased]: https://github.com/makafeli/realtime-register-skill/compare/v0.3.1...HEAD
+[0.3.1]: https://github.com/makafeli/realtime-register-skill/compare/v0.3.0...v0.3.1
 [0.3.0]: https://github.com/makafeli/realtime-register-skill/compare/v0.2.2...v0.3.0
 [0.2.2]: https://github.com/makafeli/realtime-register-skill/releases/tag/v0.2.2
 [0.2.1]: https://github.com/makafeli/realtime-register-skill/releases/tag/v0.2.1
