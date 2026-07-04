@@ -19,6 +19,8 @@ operations:
     pathParams:
       - { name: customer, type: string, required: true }
       - { name: id,       type: integer, required: true }
+    queryParams:
+      - { name: fields, type: string, description: "Comma-separated field selector." }
     responses:
       "200": { description: "Notification object with `type`, `data`, `createdDate`, optional `acknowledgeDate`." }
     errors: [ObjectDoesNotExist, AuthorizationFailed]

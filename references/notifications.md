@@ -34,6 +34,12 @@ Retrieve a single notification.
 | `customer` | `string` | yes |  |
 | `id` | `integer` | yes |  |
 
+**Query params**
+
+| Name | Type | Required | Description |
+| --- | --- | --- | --- |
+| `fields` | `string` | no | Comma-separated field selector. |
+
 **Responses**
 
 - `200` — Notification object with `type`, `data`, `createdDate`, optional `acknowledgeDate`.

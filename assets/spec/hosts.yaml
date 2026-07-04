@@ -20,6 +20,8 @@ operations:
     summary: Retrieve a single host and its address records.
     pathParams:
       - { name: hostName, type: string, required: true, format: fqdn }
+    queryParams:
+      - { name: fields, type: string, description: "Comma-separated field selector." }
     responses:
       "200": { description: "Host object with `addresses` array." }
     errors: [ObjectDoesNotExist, AuthorizationFailed]

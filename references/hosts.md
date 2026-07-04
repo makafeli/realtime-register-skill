@@ -33,6 +33,12 @@ Retrieve a single host and its address records.
 | --- | --- | --- | --- |
 | `hostName` | `string` | yes |  |
 
+**Query params**
+
+| Name | Type | Required | Description |
+| --- | --- | --- | --- |
+| `fields` | `string` | no | Comma-separated field selector. |
+
 **Responses**
 
 - `200` — Host object with `addresses` array.

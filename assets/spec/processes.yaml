@@ -19,6 +19,8 @@ operations:
     summary: Retrieve a single process and its current status.
     pathParams:
       - { name: processId, type: integer, required: true, description: "processId returned from the originating mutation." }
+    queryParams:
+      - { name: fields, type: string, description: "Comma-separated field selector." }
     responses:
       "200": { description: "Process object with `status`, `type`, `createdDate`, `result`, and `errors`." }
     errors: [ObjectDoesNotExist, AuthorizationFailed]

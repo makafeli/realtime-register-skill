@@ -33,6 +33,12 @@ Retrieve a single process and its current status.
 | --- | --- | --- | --- |
 | `processId` | `integer` | yes | processId returned from the originating mutation. |
 
+**Query params**
+
+| Name | Type | Required | Description |
+| --- | --- | --- | --- |
+| `fields` | `string` | no | Comma-separated field selector. |
+
 **Responses**
 
 - `200` — Process object with `status`, `type`, `createdDate`, `result`, and `errors`.
