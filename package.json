@@ -25,7 +25,7 @@
   "scripts": {
     "build": "tsc -p tsconfig.json",
     "dev": "tsc -p tsconfig.json --watch",
-    "audit": "node scripts/audit-refs.mjs",
+    "audit": "npm run build && node scripts/audit-refs.mjs",
     "doctor": "node bin/rtr.js doctor",
     "generate": "node bin/rtr.js generate",
     "lint": "tsc -p tsconfig.json --noEmit",

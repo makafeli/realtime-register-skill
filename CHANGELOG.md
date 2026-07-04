@@ -9,6 +9,7 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 ### Added
 
 - Added: authentication contract (ApiKey header) in _shared.yaml, SKILL.md, and all generated references; Basic/session auth flagged deprecated.
+- Added: spec audit now validates method/type/path values, enforces the billable invariant, and verifies a fidelity fingerprint lock (assets/spec/_fingerprints.json).
 
 ### Fixed
 

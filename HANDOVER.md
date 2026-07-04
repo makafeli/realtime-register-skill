@@ -266,9 +266,9 @@ $ echo $?
 ```
 
 Flags: `--body <file>`, `--query <file>`, `--path-params <file>`
-(combinable). Exit codes: `0` pass · `1` schema violation · `2` unknown op
-or missing file. Validation uses `ajv` + `ajv-formats` (`email`, `uri`,
-`date`, `date-time`, `ipv4`, `ipv6`).
+(combinable). Exit codes: `0` pass · `1` any failure (schema violation,
+unknown operationId, or missing file). Validation uses `ajv` + `ajv-formats`
+(`email`, `uri`, `date`, `date-time`, `ipv4`, `ipv6`).
 
 #### `rtr generate`
 
@@ -318,13 +318,14 @@ CI should run this on every push.
 **Spec change** (e.g. upstream adds a new field):
 
 ```bash
-node bin/rtr.js scrape <operationId>         # 1. pull fresh live shape
-$EDITOR assets/spec/<category>.yaml          # 2. reconcile YAML
+node bin/rtr.js scrape <operationId>          # 1. pull fresh live shape
+$EDITOR assets/spec/<category>.yaml           # 2. reconcile YAML
 npm run build                                 # 3. ensure schema still builds
-node scripts/audit-refs.mjs                   # 4. counts/slugs sanity
-node bin/rtr.js doctor                        # 5. all 200s
-node bin/rtr.js generate                      # 6. regen references/
-git add assets/spec references CHANGELOG.md   # 7. commit both
+node scripts/audit-refs.mjs --update-lock     # 4. re-lock the fidelity fingerprint
+node scripts/audit-refs.mjs                   # 5. counts/checks sanity, problems: 0
+node bin/rtr.js doctor                        # 6. all 200s
+node bin/rtr.js generate                      # 7. regen references/
+git add assets/spec references CHANGELOG.md   # 8. commit together, including the lock
 ```
 
 **CLI change** (e.g. new `--format json` on `list`):
@@ -403,10 +404,12 @@ the shipped CLI. All are plain `.mjs` and need no TypeScript build.
 
 ### 5.1 `scripts/audit-refs.mjs`
 
-Static sanity check of the full spec. Run before every release.
+Static sanity check of the full spec. Run before every release. `npm run
+audit` builds first (`tsc`) since the script imports the compiled
+`dist/lib/spec.js` and `dist/lib/integrity.js`.
 
 ```bash
-$ node scripts/audit-refs.mjs
+$ npm run audit
 === RTR spec audit ===
 categories: 16
 operations: 109
@@ -418,12 +421,32 @@ problems: 0
 
 Checks performed:
 
-- Category count (expect 16).
-- Total operation count (expect 109).
-- Per-category op counts against the known-good table.
+- Presence of required top-level keys (`operationId`, `method`, `path`,
+  `docUrl`, `authScope`, `summary`, `async`).
+- `method` is one of `GET`, `POST`, `PUT`, `PATCH`, `DELETE`, `REFERENCE`
+  (`REFERENCE` is reserved for `metadataOverview`, a documentation-only
+  entry with no HTTP endpoint).
+- `docUrl` starts with `/` and contains no whitespace.
+- `path` starts with `/v2/`, `wss://` (ADAC websocket ops), `/docs/`
+  (`metadataOverview`), or `(` (`webhookNotification`'s placeholder path).
+- Every `type` under a `pathParams`, `queryParams`, or `requestBody` node is
+  one of `string`, `integer`, `number`, `boolean`, `array`, `object`.
 - `operationId` uniqueness across all categories.
-- Every `ref:` resolves to an enum or type in `_shared.yaml`.
-- Every `docUrl` starts with a valid slug prefix.
+- `verified` is one of `docs`, `sdk`, `none` when present.
+- Every `enumRef`/`fieldsRef`/`itemsRef` resolves to an entry in
+  `_shared.yaml`.
+- Billable invariant: any operation whose `errors` includes a
+  `BillableAcknowledgmentNeeded*` code must declare
+  `requestBody.fields.billables`.
+- **Fidelity fingerprint lock** (`assets/spec/_fingerprints.json`): every
+  `verified: docs` operation's canonical contract (method, path, params,
+  required body fields — see `src/lib/integrity.ts`) must hash to the value
+  committed in the lock. An edit to a verified operation's contract that
+  isn't followed by a lock regen fails the audit, naming the operation and
+  the fix: `node scripts/audit-refs.mjs --update-lock`.
+
+Run `node scripts/audit-refs.mjs --update-lock` after any intentional,
+re-verified contract edit and commit the updated lock in the same PR.
 
 Exit 0 on clean audit, non-zero on any problem.
 
