@@ -34,10 +34,9 @@ Requirements: **Node.js 20.11+**.
 3. Diff the printed skeleton against the YAML entry.
 4. Edit the YAML. Match the structure documented in
    [`docs/spec-format.md`](docs/spec-format.md).
-5. Run the full verification:
+5. Run `npm run verify` (build + lint + test + audit), plus the network-only
+   spec-change checks:
    ```bash
-   npm run build
-   node scripts/audit-refs.mjs
    node bin/rtr.js doctor
    node bin/rtr.js generate
    ```
@@ -63,9 +62,8 @@ Requirements: **Node.js 20.11+**.
 
 Before opening a PR, confirm:
 
-- [ ] `npm run build` succeeds with no TypeScript errors.
-- [ ] `node scripts/audit-refs.mjs` reports `problems: 0`.
-- [ ] `node bin/rtr.js doctor` reports all 200s.
+- [ ] `npm run verify` passes (build + lint + test + audit, exit 0).
+- [ ] `node bin/rtr.js doctor` reports all 200s (spec changes only).
 - [ ] `references/*.md` is regenerated if any YAML changed.
 - [ ] `CHANGELOG.md` is updated under `[Unreleased]`.
 - [ ] No `console.log` or debug code in `src/`.

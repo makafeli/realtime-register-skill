@@ -31,6 +31,7 @@
     "lint": "tsc -p tsconfig.json --noEmit",
     "test": "vitest run",
     "test:watch": "vitest",
+    "verify": "npm run build && npm run lint && npm test && npm run audit",
     "prepublishOnly": "npm run build"
   },
   "engines": {

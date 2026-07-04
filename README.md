@@ -273,7 +273,8 @@ workflow, drift policy, and enforcement tooling are documented in
 
 See [`CONTRIBUTING.md`](CONTRIBUTING.md). In short: never edit
 `references/*.md` directly (they are generated), keep field names camelCase,
-and run `rtr doctor` + `node scripts/audit-refs.mjs` before opening a PR.
+and run `npm run verify` — the one-command build + lint + test + audit gate —
+before opening a PR.
 
 ---
 

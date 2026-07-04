@@ -12,6 +12,7 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 - Added: spec audit now validates method/type/path values, enforces the billable invariant, and verifies a fidelity fingerprint lock (assets/spec/_fingerprints.json).
 - Added: test coverage for schema derivation (all-operations Ajv compile gate), reference generation (committed-references sync check), the validate CLI, and loader error paths.
 - Added: skill install targets for the agentskills.io standard dir (Codex/Gemini/Augment), Gemini CLI, Codex CLI; --pointer generates .junie/AGENTS.md, .github/copilot-instructions.md, .cursor/rules/*.mdc and AGENTS.md pointer blocks; SKILL.md documents the npx fallback when rtr is not on PATH.
+- Added: npm run verify one-command gate; AGENTS.md/CLAUDE.md for agent contributors.
 
 ### Fixed
 
