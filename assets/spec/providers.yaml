@@ -93,13 +93,14 @@ operations:
   - operationId: getRegistryAccount
     verified: docs
     method: GET
-    path: /v2/registryAccount/{handle}
+    path: /v2/registryAccounts/{registry}/{loginName}
     docUrl: /registryAccount/get
     async: false
     authScope: gateway
     summary: Gateway-only. Inspect a registry-account configuration.
     pathParams:
-      - { name: handle, type: string, required: true }
+      - { name: registry,   type: string, required: true, description: "The name of the registry." }
+      - { name: loginName,  type: string, required: true, description: "The registry account login name." }
     queryParams:
       - { name: fields, type: string }
     responses:
@@ -111,7 +112,7 @@ operations:
   - operationId: listRegistryAccounts
     verified: docs
     method: GET
-    path: /v2/registryAccount
+    path: /v2/registryAccounts
     docUrl: /registryAccount/list
     async: false
     authScope: gateway
@@ -129,7 +130,7 @@ operations:
   - operationId: providerInfoDeprecated
     verified: docs
     method: GET
-    path: /v2/providers/{name}/info
+    path: /v2/providers/REGISTRY/{name}/info
     docUrl: /providers/info
     async: false
     authScope: customer

@@ -138,7 +138,7 @@ List downtime windows (past + scheduled).
 
 ### `getRegistryAccount`
 
-`GET /v2/registryAccount/{handle}`
+`GET /v2/registryAccounts/{registry}/{loginName}`
 
 Gateway-only. Inspect a registry-account configuration.
 
@@ -149,7 +149,8 @@ Gateway-only. Inspect a registry-account configuration.
 
 | Name | Type | Required | Description |
 | --- | --- | --- | --- |
-| `handle` | `string` | yes |  |
+| `registry` | `string` | yes | The name of the registry. |
+| `loginName` | `string` | yes | The registry account login name. |
 
 **Query params**
 
@@ -170,7 +171,7 @@ Gateway-only. Inspect a registry-account configuration.
 
 ### `listRegistryAccounts`
 
-`GET /v2/registryAccount`
+`GET /v2/registryAccounts`
 
 Gateway-only. List registry accounts.
 
@@ -196,7 +197,7 @@ Gateway-only. List registry accounts.
 
 ### `providerInfoDeprecated`
 
-`GET /v2/providers/{name}/info`
+`GET /v2/providers/REGISTRY/{name}/info`
 
 DEPRECATED. Legacy provider info endpoint; use `getProvider` + `getTldInfo`.
 
