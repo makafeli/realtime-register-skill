@@ -21,7 +21,7 @@ in _shared.yaml for accepted methods.
 
 ### `getCertificate`
 
-`GET /v2/ssl/certificates/{id}`
+`GET /v2/ssl/certificates/{certificateId}`
 
 Retrieve a certificate order and its current state.
 
@@ -32,7 +32,7 @@ Retrieve a certificate order and its current state.
 
 | Name | Type | Required | Description |
 | --- | --- | --- | --- |
-| `id` | `string` | yes |  |
+| `certificateId` | `string` | yes |  |
 
 **Query params**
 
@@ -75,7 +75,7 @@ List certificate orders.
 
 ### `getProduct`
 
-`GET /v2/ssl/products/{id}`
+`GET /v2/ssl/products/{product}`
 
 Retrieve SSL product metadata (validation type, SAN limits, warranty).
 
@@ -86,7 +86,7 @@ Retrieve SSL product metadata (validation type, SAN limits, warranty).
 
 | Name | Type | Required | Description |
 | --- | --- | --- | --- |
-| `id` | `string` | yes |  |
+| `product` | `string` | yes |  |
 
 **Query params**
 
@@ -185,7 +185,7 @@ Place a new certificate order.
 
 ### `reissueCertificate`
 
-`POST /v2/ssl/certificates/{id}/reissue`  _async_
+`POST /v2/ssl/certificates/{certificateId}/reissue`  _async_
 
 Reissue a certificate with a new CSR or SAN set.
 
@@ -196,7 +196,7 @@ Reissue a certificate with a new CSR or SAN set.
 
 | Name | Type | Required | Description |
 | --- | --- | --- | --- |
-| `id` | `string` | yes |  |
+| `certificateId` | `string` | yes |  |
 
 **Query params**
 
@@ -237,7 +237,7 @@ Reissue a certificate with a new CSR or SAN set.
 
 ### `renewCertificate`
 
-`POST /v2/ssl/certificates/{id}/renew`  _async_
+`POST /v2/ssl/certificates/{certificateId}/renew`  _async_
 
 Renew an existing certificate.
 
@@ -248,7 +248,7 @@ Renew an existing certificate.
 
 | Name | Type | Required | Description |
 | --- | --- | --- | --- |
-| `id` | `string` | yes |  |
+| `certificateId` | `string` | yes |  |
 
 **Query params**
 
@@ -288,7 +288,7 @@ Renew an existing certificate.
 
 ### `revokeCertificate`
 
-`POST /v2/ssl/certificates/{id}/revoke`  _async_
+`DELETE /v2/ssl/certificates/{certificateId}`  _async_
 
 Revoke a certificate.
 
@@ -299,7 +299,7 @@ Revoke a certificate.
 
 | Name | Type | Required | Description |
 | --- | --- | --- | --- |
-| `id` | `string` | yes |  |
+| `certificateId` | `string` | yes |  |
 
 **Request body** (`application/json`)
 
@@ -312,6 +312,10 @@ Revoke a certificate.
 - `202` — { processId }
 
 **Errors:** `InvalidParameter`, `ObjectDoesNotExist`
+
+**Gotchas**
+
+- DELETE on the bare certificate resource, not POST .../revoke. The live docs page slug (`/ssl/revoke`) is retained for docUrl fidelity even though the HTTP method is DELETE.
 
 
 ### `resendDcv`
@@ -372,6 +376,10 @@ Download the issued certificate in PEM or PKCS#7 format.
 - `200` — Certificate chain.
 
 **Errors:** `ObjectDoesNotExist`, `InvalidParameter`
+
+**Gotchas**
+
+- Method verified manually (GET); docs page lacks a machine-readable method span, so it is excluded from the live diff.
 
 
 ### `scheduleValidationCall`
@@ -465,7 +473,7 @@ Send (or re-send) the CA Subscriber Agreement email to the approver for a pendin
 
 ### `addNoteDeprecated`
 
-`POST /v2/ssl/certificates/{id}/add-note`
+`POST /v2/processes/{processId}/add-note`
 
 Attach a free-form note to a certificate order. DEPRECATED; use a ticketing system instead.
 
@@ -476,7 +484,7 @@ Attach a free-form note to a certificate order. DEPRECATED; use a ticketing syst
 
 | Name | Type | Required | Description |
 | --- | --- | --- | --- |
-| `id` | `string` | yes |  |
+| `processId` | `integer` | yes | The process ID. |
 
 **Request body** (`application/json`)
 
@@ -494,11 +502,12 @@ Attach a free-form note to a certificate order. DEPRECATED; use a ticketing syst
 
 - Marked Deprecated in the live documentation; new integrations should avoid this endpoint.
 - The body field is `message`, not `note`.
+- Same process-family fix as resendDcv/scheduleValidationCall/sendSubscriberAgreement (plan 010): endpoint is rooted under /v2/processes/{processId}/, not /v2/ssl/certificates/{id}/.
 
 
 ### `importCertificate`
 
-`POST /v2/ssl/certificates/import`
+`POST /v2/ssl/import`
 
 Import an externally issued certificate so it can be tracked and renewed through the platform.
 
@@ -524,7 +533,7 @@ Import an externally issued certificate so it can be tracked and renewed through
 
 ### `decodeCsr`
 
-`POST /v2/ssl/decode-csr`
+`POST /v2/ssl/decodecsr`
 
 Decode a PEM-encoded CSR and return its parsed fields (commonName, SANs, organization, keyBits, signatureAlgorithm).
 
@@ -550,7 +559,7 @@ Decode a PEM-encoded CSR and return its parsed fields (commonName, SANs, organiz
 
 ### `generateAuthKey`
 
-`POST /v2/ssl/generate-authkey`
+`POST /v2/ssl/authkey`
 
 Generate a new authKey used for ACME external-account-binding (EAB) or programmatic re-key operations.
 

@@ -131,7 +131,7 @@ Resend the request a process is pending on (e.g. a FOA mail to a registrant).
 
 ### `cancelProcess`
 
-`POST /v2/processes/{processId}/cancel`
+`DELETE /v2/processes/{processId}`
 
 Request cancellation of a PENDING or RUNNING process.
 
@@ -153,5 +153,6 @@ Request cancellation of a PENDING or RUNNING process.
 **Gotchas**
 
 - Not all process types are cancellable; COMPLETED/FAILED processes return InvalidParameter.
+- DELETE on the bare process resource, not POST .../cancel. The live docs page slug (`/processes/cancel`) is retained for docUrl fidelity even though the HTTP method is DELETE.
 
 

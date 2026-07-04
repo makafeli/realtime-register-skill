@@ -80,8 +80,8 @@ operations:
 
   - operationId: cancelProcess
     verified: docs
-    method: POST
-    path: /v2/processes/{processId}/cancel
+    method: DELETE
+    path: /v2/processes/{processId}
     docUrl: /processes/cancel
     async: false
     authScope: customer
@@ -93,3 +93,4 @@ operations:
     errors: [ObjectDoesNotExist, InvalidParameter]
     gotchas:
       - "Not all process types are cancellable; COMPLETED/FAILED processes return InvalidParameter."
+      - "DELETE on the bare process resource, not POST .../cancel. The live docs page slug (`/processes/cancel`) is retained for docUrl fidelity even though the HTTP method is DELETE."

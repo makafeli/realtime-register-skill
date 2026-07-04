@@ -14,13 +14,13 @@ operations:
   - operationId: getCertificate
     verified: docs
     method: GET
-    path: /v2/ssl/certificates/{id}
+    path: /v2/ssl/certificates/{certificateId}
     docUrl: /ssl/get
     async: false
     authScope: customer
     summary: Retrieve a certificate order and its current state.
     pathParams:
-      - { name: id, type: string, required: true }
+      - { name: certificateId, type: string, required: true }
     queryParams:
       - { name: fields, type: string, description: "Comma-separated field selector." }
     responses:
@@ -48,13 +48,13 @@ operations:
   - operationId: getProduct
     verified: docs
     method: GET
-    path: /v2/ssl/products/{id}
+    path: /v2/ssl/products/{product}
     docUrl: /ssl/products/get
     async: false
     authScope: customer
     summary: Retrieve SSL product metadata (validation type, SAN limits, warranty).
     pathParams:
-      - { name: id, type: string, required: true }
+      - { name: product, type: string, required: true }
     queryParams:
       - { name: fields, type: string, description: "Comma-separated field selector." }
     responses:
@@ -126,13 +126,13 @@ operations:
   - operationId: reissueCertificate
     verified: docs
     method: POST
-    path: /v2/ssl/certificates/{id}/reissue
+    path: /v2/ssl/certificates/{certificateId}/reissue
     docUrl: /ssl/reissue
     async: true
     authScope: customer
     summary: Reissue a certificate with a new CSR or SAN set.
     pathParams:
-      - { name: id, type: string, required: true }
+      - { name: certificateId, type: string, required: true }
     queryParams:
       - { name: quote, type: boolean }
     requestBody:
@@ -162,13 +162,13 @@ operations:
   - operationId: renewCertificate
     verified: docs
     method: POST
-    path: /v2/ssl/certificates/{id}/renew
+    path: /v2/ssl/certificates/{certificateId}/renew
     docUrl: /ssl/renew
     async: true
     authScope: customer
     summary: Renew an existing certificate.
     pathParams:
-      - { name: id, type: string, required: true }
+      - { name: certificateId, type: string, required: true }
     queryParams:
       - { name: quote, type: boolean }
     requestBody:
@@ -198,14 +198,14 @@ operations:
 
   - operationId: revokeCertificate
     verified: docs
-    method: POST
-    path: /v2/ssl/certificates/{id}/revoke
+    method: DELETE
+    path: /v2/ssl/certificates/{certificateId}
     docUrl: /ssl/revoke
     async: true
     authScope: customer
     summary: Revoke a certificate.
     pathParams:
-      - { name: id, type: string, required: true }
+      - { name: certificateId, type: string, required: true }
     requestBody:
       contentType: application/json
       fields:
@@ -213,6 +213,8 @@ operations:
     responses:
       "202": { description: "{ processId }" }
     errors: [InvalidParameter, ObjectDoesNotExist]
+    gotchas:
+      - "DELETE on the bare certificate resource, not POST .../revoke. The live docs page slug (`/ssl/revoke`) is retained for docUrl fidelity even though the HTTP method is DELETE."
 
   - operationId: resendDcv
     verified: docs
@@ -241,6 +243,7 @@ operations:
     docUrl: /ssl/download
     async: false
     authScope: customer
+    liveDiff: false
     summary: Download the issued certificate in PEM or PKCS#7 format.
     pathParams:
       - { name: id, type: string, required: true }
@@ -249,6 +252,8 @@ operations:
     responses:
       "200": { description: "Certificate chain." }
     errors: [ObjectDoesNotExist, InvalidParameter]
+    gotchas:
+      - "Method verified manually (GET); docs page lacks a machine-readable method span, so it is excluded from the live diff."
 
   - operationId: scheduleValidationCall
     verified: docs
@@ -308,13 +313,13 @@ operations:
   - operationId: addNoteDeprecated
     verified: docs
     method: POST
-    path: /v2/ssl/certificates/{id}/add-note
+    path: /v2/processes/{processId}/add-note
     docUrl: /ssl/add-note
     async: false
     authScope: customer
     summary: Attach a free-form note to a certificate order. DEPRECATED; use a ticketing system instead.
     pathParams:
-      - { name: id, type: string, required: true }
+      - { name: processId, type: integer, required: true, description: "The process ID." }
     requestBody:
       contentType: application/json
       fields:
@@ -325,11 +330,12 @@ operations:
     gotchas:
       - "Marked Deprecated in the live documentation; new integrations should avoid this endpoint."
       - "The body field is `message`, not `note`."
+      - "Same process-family fix as resendDcv/scheduleValidationCall/sendSubscriberAgreement (plan 010): endpoint is rooted under /v2/processes/{processId}/, not /v2/ssl/certificates/{id}/."
 
   - operationId: importCertificate
     verified: docs
     method: POST
-    path: /v2/ssl/certificates/import
+    path: /v2/ssl/import
     docUrl: /ssl/import
     async: false
     authScope: customer
@@ -349,7 +355,7 @@ operations:
   - operationId: decodeCsr
     verified: docs
     method: POST
-    path: /v2/ssl/decode-csr
+    path: /v2/ssl/decodecsr
     docUrl: /ssl/decocdecsr
     async: false
     authScope: customer
@@ -367,7 +373,7 @@ operations:
   - operationId: generateAuthKey
     verified: docs
     method: POST
-    path: /v2/ssl/generate-authkey
+    path: /v2/ssl/authkey
     docUrl: /ssl/generate-authkey
     async: false
     authScope: customer
