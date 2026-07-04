@@ -352,7 +352,7 @@ Re-send the DCV email or re-check a DNS/HTTP DCV token for a pending certificate
 
 ### `downloadCertificate`
 
-`GET /v2/ssl/certificates/{id}/download`
+`GET /v2/ssl/certificates/{certificateId}/download`
 
 Download the issued certificate in PEM or PKCS#7 format.
 
@@ -363,7 +363,7 @@ Download the issued certificate in PEM or PKCS#7 format.
 
 | Name | Type | Required | Description |
 | --- | --- | --- | --- |
-| `id` | `string` | yes |  |
+| `certificateId` | `string` | yes |  |
 
 **Query params**
 

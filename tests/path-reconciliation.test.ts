@@ -225,6 +225,28 @@ describe("Path + method reconciliation (plan 012)", () => {
     expect(productParam).toMatchObject({ type: "string", required: true });
   });
 
+  it("downloadCertificate uses {certificateId}, not {id}", () => {
+    const spec = loadSpec();
+    const hit = findOperation(spec, "downloadCertificate");
+    expect(hit).not.toBeNull();
+    const { op } = hit!;
+
+    expect(op.path).toBe("/v2/ssl/certificates/{certificateId}/download");
+    const certificateIdParam = op.pathParams?.find((p) => p.name === "certificateId");
+    expect(certificateIdParam).toBeDefined();
+    expect(op.pathParams?.find((p) => p.name === "id")).toBeUndefined();
+  });
+
+  it("getBrandTemplate query params do not include locale", () => {
+    const spec = loadSpec();
+    const hit = findOperation(spec, "getBrandTemplate");
+    expect(hit).not.toBeNull();
+    const { op } = hit!;
+
+    expect(op.queryParams?.find((p) => p.name === "locale")).toBeUndefined();
+    expect(op.queryParams?.find((p) => p.name === "fields")).toBeDefined();
+  });
+
   it("pseudo-page operations are marked liveDiff: false", () => {
     const spec = loadSpec();
     for (const id of [

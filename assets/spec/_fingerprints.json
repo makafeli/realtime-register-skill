@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-07-04T11:23:52.797Z",
+  "generatedAt": "2026-07-04T12:27:34.194Z",
   "fingerprints": {
     "ackNotification": "88e66a69fc511ae1d016a6f3a2d20b74909bbe517af4e13c475b748f05bb16c3",
     "adacCategories": "09fb958debc45c92176c82d52974686edf75ffb6f9ffe37fc8363d59e98e184e",
@@ -27,12 +27,12 @@
     "deleteHost": "c12feaf4e1466ef996a49928bdcc679bff6cbe73824e009a237a204ad88baf4d",
     "dnsZoneAckDsUpdate": "e072d5f098c76a6ec876c98942ed721566149f375606ce57c203495e9ee3c352",
     "dnsZoneKeyRollover": "1cc5a8f631f7cbd18b32af64378a58a378513757c22ee7be9f73ef0df90abe3a",
-    "downloadCertificate": "b083a982e374653f687fba958a41e97b49bdbedb6c171d827b1a86f9ccf7c592",
+    "downloadCertificate": "a940178c5f0488d47bb046392504f49993a9a6940b8e3e6745aa0bb604086e7d",
     "gatewayDomainInfo": "550a7cb212b666b944d3b3ad41eda4d00487522c30008acdd8204d0bc61e2778",
     "generateAuthKey": "bfe243b8b3262762a7c545d428cadc00cb81f4d2e2d01bc4fff76b538cb537d9",
     "getAcmeSubscription": "91310ca4e14b048ab4e367d879cfba688ac05ab5699dc95324e1f7285005eb9d",
     "getBrand": "faafc178eb454228234c121b44fb9ffba77c3edb6d2da8a234e9145b1aefedef",
-    "getBrandTemplate": "ab6293478117797cd947d8bdd6d29115a69b21a2e98b0f1fc4c8b516a49d1e65",
+    "getBrandTemplate": "dc4e41f8f4048c8407b39454b043fb417147a1082f564c083d46008b6b0eb216",
     "getCertificate": "ac5868ee3226e21e39db5743d1dd703a2eac987941cd268671ba25e403f3f516",
     "getContact": "47d23b5f08126d33eb67e6160354cd6bcf3f0f7005e4def2848ba86802aa7002",
     "getCountry": "7752213e8492feb800594707c04d8e3663d56980c35d32a3ae1c738c50108081",

@@ -239,14 +239,14 @@ operations:
   - operationId: downloadCertificate
     verified: docs
     method: GET
-    path: /v2/ssl/certificates/{id}/download
+    path: /v2/ssl/certificates/{certificateId}/download
     docUrl: /ssl/download
     async: false
     authScope: customer
     liveDiff: false
     summary: Download the issued certificate in PEM or PKCS#7 format.
     pathParams:
-      - { name: id, type: string, required: true }
+      - { name: certificateId, type: string, required: true }
     queryParams:
       - { name: format, type: string, enum: [PEM, P7B], default: PEM }
     responses:

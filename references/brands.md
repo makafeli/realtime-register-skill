@@ -227,7 +227,6 @@ Retrieve a brand-specific notification/mail template override.
 
 | Name | Type | Required | Description |
 | --- | --- | --- | --- |
-| `locale` | `string` | no |  |
 | `fields` | `string` | no | Comma-separated field selector. |
 
 **Responses**

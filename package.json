@@ -1,6 +1,6 @@
 {
   "name": "@cave-man/realtime-register-skills",
-  "version": "0.2.2",
+  "version": "0.3.0",
   "description": "Installable Realtime Register REST API v2 agent skill and CLI. Ships SKILL.md, 109 operation references, and the rtr validation/doc CLI. Install with `npx @cave-man/realtime-register-skills install`.",
   "type": "module",
   "bin": {

@@ -153,7 +153,6 @@ operations:
       - { name: name,     type: string, required: true,
           description: "Template identifier (e.g. TRANSFER_FOA, CONTACT_VERIFICATION)." }
     queryParams:
-      - { name: locale, type: string, example: "en_US" }
       - { name: fields, type: string, description: "Comma-separated field selector." }
     responses:
       "200": { description: "Template object with `subject`, `text`, `html`, `locale`." }

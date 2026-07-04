@@ -6,6 +6,8 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+## [0.3.0] — 2026-07-04
+
 ### Added
 
 - Added: rtr describe --format json (machine-readable operation contract incl. derived JSON Schemas and auth block).
@@ -22,6 +24,8 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 - Fixed: field-level reconciliation of 21 operations against live docs — requestCertificate customer/san, generateAuthKey body, contact verifications, brand contact/replyTo emails, ACME update fields, quote/fields query params.
 - Fixed: weekly drift check now actually compares required body fields; scraper surfaces parse failures instead of defaulting to GET.
 - Fixed: 24 path/method corrections from the first real live-docs diff (revoke/cancel are DELETE, exchangerates/registryAccounts/import/authkey paths, param renames); non-diffable doc pages now marked liveDiff: false.
+- Fixed: downloadCertificate path/pathParams renamed {id} → {certificateId} to match the live docs page's URL-fields table.
+- Fixed: getBrandTemplate no longer declares a nonexistent locale query param; live docs only list fields.
 
 ### Security
 
@@ -165,7 +169,8 @@ First public release.
 | `providers`     | 7   | Providers + gateway-only registry accounts          |
 | `misc`          | 5   | IsProxy + 4 ADAC WebSocket actions                  |
 
-[Unreleased]: https://github.com/makafeli/realtime-register/compare/v0.2.2...HEAD
+[Unreleased]: https://github.com/makafeli/realtime-register/compare/v0.3.0...HEAD
+[0.3.0]: https://github.com/makafeli/realtime-register/compare/v0.2.2...v0.3.0
 [0.2.2]: https://github.com/makafeli/realtime-register/releases/tag/v0.2.2
 [0.2.1]: https://github.com/makafeli/realtime-register/releases/tag/v0.2.1
 [0.2.0]: https://github.com/makafeli/realtime-register/releases/tag/v0.2.0
