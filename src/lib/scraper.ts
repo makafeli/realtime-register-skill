@@ -16,7 +16,8 @@ export interface ScrapedField {
 
 export interface ScrapedOperation {
   url: string;
-  method: string;
+  /** Uppercase HTTP method, or null when the page could not be parsed. */
+  method: string | null;
   contentType?: string;
   urlFields: ScrapedField[];
   queryParams: ScrapedField[];
@@ -34,8 +35,10 @@ export function parseOperationHtml(html: string): ScrapedOperation {
   const $ = loadHtml(html);
 
   const scripts = $("script").toArray().map((s) => $(s).html() ?? "").join("\n");
-  const urlMatch = scripts.match(/var\s+url\s*=\s*['"]([^'"]+)['"]/);
-  const methodMatch = scripts.match(/(?:var\s+method|METHOD)\s*=\s*['"]?([A-Z]+)['"]?/i);
+  // Older markup declared `var url = '...'`; the current markup assigns the
+  // global without the keyword (`url = '...'`), so `var` is optional.
+  const urlMatch = scripts.match(/(?:var\s+)?url\s*=\s*['"]([^'"]+)['"]/);
+  const method = extractMethod($, scripts);
 
   // Walk the document in order. Each h3/h4/h5/h6 claims the next <table> that
   // appears after it (and before the next heading). We bucket claimed tables
@@ -78,12 +81,30 @@ export function parseOperationHtml(html: string): ScrapedOperation {
 
   return {
     url: urlMatch?.[1] ?? "",
-    method: (methodMatch?.[1] ?? "GET").toUpperCase(),
+    method,
     urlFields,
     queryParams,
     bodyFields,
     nestedTables,
   };
+}
+
+const HTTP_METHOD_RE = /^(GET|POST|PUT|PATCH|DELETE)$/i;
+
+/**
+ * Extract the HTTP method from a doc page, or null when it cannot be found.
+ * Current markup carries `<span id="method">POST</span>`; older markup set a
+ * `method`/`METHOD` variable in an inline script. No silent default — a null
+ * means "the page no longer looks like we expect" and callers must surface it.
+ */
+function extractMethod($: CheerioAPI, scripts: string): string | null {
+  const domMethod = $("#method").text().trim();
+  if (HTTP_METHOD_RE.test(domMethod)) return domMethod.toUpperCase();
+
+  const legacyMatch = scripts.match(/(?:var\s+method|METHOD)\s*=\s*['"]?([A-Z]+)['"]?/i);
+  if (legacyMatch) return legacyMatch[1]!.toUpperCase();
+
+  return null;
 }
 
 function collectLabelledTables($: CheerioAPI): Array<[string, Cheerio<AnyNode>]> {
@@ -104,23 +125,6 @@ function collectLabelledTables($: CheerioAPI): Array<[string, Cheerio<AnyNode>]>
   return out;
 }
 
-function extractTable($: CheerioAPI, label: RegExp): ScrapedField[] {
-  const header = $("h2, h3, h4, h5, h6").filter((_, el) => label.test($(el).text())).first();
-  if (header.length === 0) return [];
-  // Walk forward through siblings until we find the first table, stopping if
-  // we hit another header of equal/higher rank (keeps us inside the section).
-  let table: Cheerio<AnyNode> | null = null;
-  let node = header.next();
-  while (node.length > 0) {
-    if (node.is("table")) { table = node; break; }
-    const found = node.find("table").first();
-    if (found.length > 0) { table = found; break; }
-    if (node.is("h2, h3, h4, h5, h6")) break;
-    node = node.next();
-  }
-  return table ? rowsToFields($, table) : [];
-}
-
 function rowsToFields($: CheerioAPI, table: Cheerio<AnyNode>): ScrapedField[] {
   // Read header labels so we handle both 3-column (GET: name/type/desc[/restr])
   // and 5-column (POST: name/type/required/desc/restr) layouts uniformly.
@@ -129,8 +133,11 @@ function rowsToFields($: CheerioAPI, table: Cheerio<AnyNode>): ScrapedField[] {
     .toArray()
     .map((th) => $(th).text().trim().toLowerCase());
   const idx = (re: RegExp): number => headers.findIndex((h) => re.test(h));
-  const nameIdx = Math.max(0, idx(/^name$/));
-  const typeIdx = Math.max(1, idx(/^type$/));
+  const nameIdx = idx(/^name$/);
+  const typeIdx = idx(/^type$/);
+  // Refuse to guess: a table without explicit name/type headers is not a
+  // field table we understand, so it contributes no fields.
+  if (nameIdx < 0 || typeIdx < 0) return [];
   const reqIdx = idx(/required/);
   const descIdx = idx(/description/);
   const restrIdx = idx(/restriction/);
@@ -154,30 +161,6 @@ function rowsToFields($: CheerioAPI, table: Cheerio<AnyNode>): ScrapedField[] {
     }
   }
   return out;
-}
-
-function extractNestedTables($: CheerioAPI): Record<string, ScrapedField[]> {
-  const result: Record<string, ScrapedField[]> = {};
-  const seenLabels = new Set([
-    "url fields",
-    "request parameters",
-    "request content fields",
-    "response fields",
-    "response",
-    "request",
-    "successful request",
-    "failed requests",
-    "api tryout",
-  ]);
-  $("h3, h4, h5, h6").each((_, el) => {
-    const title = $(el).text().trim();
-    if (!title || seenLabels.has(title.toLowerCase())) return;
-    const table = $(el).nextAll("table").first();
-    if (table.length === 0) return;
-    const fields = rowsToFields($, table);
-    if (fields.length > 0) result[title] = fields;
-  });
-  return result;
 }
 
 export async function checkLink(url: string): Promise<{ ok: boolean; status: number }> {

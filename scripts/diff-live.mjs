@@ -43,8 +43,16 @@ for (const f of files) {
       continue;
     }
 
-    // Method drift
-    if (scraped.method && op.method && scraped.method !== op.method) {
+    // Method drift. A null scraped method means the page markup no longer
+    // matches what the scraper understands — surface that as a parse failure
+    // instead of a false match (old code silently defaulted to GET).
+    if (op.method && scraped.method === null) {
+      drifts.push({
+        operationId: op.operationId,
+        kind: "parse",
+        detail: "method not found on page",
+      });
+    } else if (scraped.method && op.method && scraped.method !== op.method) {
       drifts.push({
         operationId: op.operationId,
         kind: "method",
@@ -63,8 +71,10 @@ for (const f of files) {
     }
 
     // Required-field count drift (body only — URL fields are template-driven).
-    if (Array.isArray(op.fields) && scraped.bodyFields.length > 0) {
-      const specRequired = op.fields.filter((f) => f.required).length;
+    // Body fields live at op.requestBody.fields as a name -> shape mapping.
+    const specFields = op.requestBody?.fields;
+    if (specFields && scraped.bodyFields.length > 0) {
+      const specRequired = Object.values(specFields).filter((f) => f && f.required === true).length;
       const liveRequired = scraped.bodyFields.filter((f) => f.required).length;
       if (specRequired !== liveRequired) {
         drifts.push({
