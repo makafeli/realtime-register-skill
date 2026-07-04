@@ -25,14 +25,15 @@ Trigger on any task involving the Realtime Register REST API:
 ## Workflow
 
 1. **Look up the operation.** Use `rtr list` to find an `operationId`, then `rtr describe <operationId>` for the full contract (method, path, fields, errors, gotchas, examples).
-2. **Build the request body** following the camelCase wire format \u2014 never snake_case, never kebab-case.
-3. **Validate before sending.** Pipe the JSON payload through `rtr validate <operationId> --body payload.json`. All required fields, enums, and nested objects are checked against the JSON Schema derived from the YAML spec.
-4. **Handle BillableAcknowledgmentNeededException.** Billable mutations return HTTP 400 with this exception on first call. Copy the exception's `billables` array verbatim (entries are `{product, action, quantity}`) into the request body and re-submit.
-5. **Poll processes.** Async mutations return `{ processId }` with HTTP 202. Poll `GET /v2/processes/{processId}` until `status` is `COMPLETED` or `FAILED`.
-6. **Regenerate docs after spec changes.** `rtr generate` keeps `references/*.md` in sync.
+2. **Authenticate.** Every request carries `Authorization: ApiKey <your-api-key>`. No other scheme: X-API-KEY does not exist, Basic auth is deprecated, sessions are deprecated.
+3. **Build the request body** following the camelCase wire format \u2014 never snake_case, never kebab-case.
+4. **Validate before sending.** Pipe the JSON payload through `rtr validate <operationId> --body payload.json`. All required fields, enums, and nested objects are checked against the JSON Schema derived from the YAML spec.
+5. **Handle BillableAcknowledgmentNeededException.** Billable mutations return HTTP 400 with this exception on first call. Copy the exception's `billables` array verbatim (entries are `{product, action, quantity}`) into the request body and re-submit.
+6. **Poll processes.** Async mutations return `{ processId }` with HTTP 202. Poll `GET /v2/processes/{processId}` until `status` is `COMPLETED` or `FAILED`.
 
 ## Hard rules
 
+- Auth header is **`Authorization: ApiKey <key>`** \u2014 never `X-API-KEY`, never `Basic` (deprecated upstream), never session keys.
 - Wire format is **camelCase**. No exceptions.
 - `period` is always in **months** (12 = one year). Never pass years.
 - Contact roles are **ADMIN, BILLING, TECH** only.

@@ -103,6 +103,13 @@ export interface SharedSpec {
   version: number;
   baseUrl: string;
   docsBaseUrl: string;
+  auth?: {
+    header: string;
+    scheme: string;
+    format: string;
+    docsUrl?: string;
+    rules: string[];
+  };
   enums: Record<string, EnumDef>;
   types: Record<string, TypeDef>;
   errors: Array<{ code: string; httpStatus: number; description?: string }>;

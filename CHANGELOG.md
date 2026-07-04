@@ -6,6 +6,10 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+### Added
+
+- Added: authentication contract (ApiKey header) in _shared.yaml, SKILL.md, and all generated references; Basic/session auth flagged deprecated.
+
 ## [0.2.2] — 2026-04-17
 
 ### Fixed

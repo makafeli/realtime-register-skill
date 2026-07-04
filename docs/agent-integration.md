@@ -12,6 +12,14 @@ Two files are the entry points:
 - **`references/*.md`** — one file per category (16 total), generated from the
   YAML spec. Loaded lazily by category, not all at once.
 
+## Authentication
+
+- Authenticate every REST request with the header `Authorization: ApiKey <your-api-key>`. API keys are generated in the Realtime Register portal.
+- There is NO `X-API-KEY` header in this API. Never use it.
+- Basic (password-based) authentication is DEPRECATED upstream. Never suggest or generate it.
+- Session authentication (`Authorization: Session <key>`) and `POST /v2/session` are deprecated in favor of API keys. Do not use.
+- Customer-scope and gateway-scope endpoints (`authScope` on each operation) require different API keys. Never mix them.
+
 A typical agent loader:
 
 ```ts
@@ -42,6 +50,8 @@ const categories = readdirSync(join(root, "references"))
 The following rules must be surfaced to the agent verbatim. Violating them
 produces requests the API rejects:
 
+- Auth header is **`Authorization: ApiKey <key>`** — never `X-API-KEY`, never
+  `Basic` (deprecated upstream), never session keys.
 - Wire format is **camelCase**. No exceptions.
 - `period` is always in **months** (12 = one year).
 - Contact roles are **ADMIN**, **BILLING**, **TECH** only.
