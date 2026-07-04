@@ -77,6 +77,11 @@ export interface Operation {
   errors?: string[];
   gotchas?: string[];
   examples?: OperationExample[];
+  /**
+   * false = page cannot be machine-diffed; skip in diff-live. Omitted (or
+   * true) means the operation is a normal, diffable REST endpoint.
+   */
+  liveDiff?: boolean;
 }
 
 export interface Category {
