@@ -249,9 +249,9 @@ Revoke a certificate.
 
 ### `resendDcv`
 
-`POST /v2/ssl/certificates/{id}/resend-dcv`
+`POST /v2/processes/{processId}/resend`
 
-Re-send the DCV email or re-check a DNS/HTTP DCV token.
+Re-send the DCV email or re-check a DNS/HTTP DCV token for a pending certificate request.
 
 - **Docs:** `https://dm.realtimeregister.com/docs/api/ssl/resenddcv`
 - **Auth scope:** `customer`
@@ -260,20 +260,23 @@ Re-send the DCV email or re-check a DNS/HTTP DCV token.
 
 | Name | Type | Required | Description |
 | --- | --- | --- | --- |
-| `id` | `string` | yes |  |
+| `processId` | `integer` | yes | Process ID of the pending certificate request. |
 
 **Request body** (`application/json`)
 
 | Field | Type | Required | Description |
 | --- | --- | --- | --- |
-| `fqdn` | `string` | yes |  |
-| `dcvType` | `DcvType` | no |  |
+| `dcv` | `Dcv[]` | yes | List of DCVs for this certificate. |
 
 **Responses**
 
-- `200` — DCV request re-queued.
+- `200` — DCV request re-queued; response may include a `warning` string on partial success.
 
 **Errors:** `InvalidParameter`, `ObjectDoesNotExist`
+
+**Gotchas**
+
+- Specialized form of resendProcess (see processes.yaml) for certificate DCV; same endpoint, DCV-specific body.
 
 
 ### `downloadCertificate`
@@ -306,9 +309,9 @@ Download the issued certificate in PEM or PKCS#7 format.
 
 ### `scheduleValidationCall`
 
-`POST /v2/ssl/certificates/{id}/schedule-validation-call`
+`POST /v2/processes/{processId}/schedule-validation-call`
 
-Schedule an EV validation call with the CA.
+Schedule an EV validation call with the CA for a pending certificate request.
 
 - **Docs:** `https://dm.realtimeregister.com/docs/api/ssl/schedule-validation-call`
 - **Auth scope:** `customer`
@@ -317,15 +320,13 @@ Schedule an EV validation call with the CA.
 
 | Name | Type | Required | Description |
 | --- | --- | --- | --- |
-| `id` | `string` | yes |  |
+| `processId` | `integer` | yes | Process ID of the pending certificate request. |
 
 **Request body** (`application/json`)
 
 | Field | Type | Required | Description |
 | --- | --- | --- | --- |
-| `date` | `string` | yes |  |
-| `voice` | `string` | yes |  |
-| `contact` | `string` | yes | Name of the person to contact. |
+| `date` | `string` | yes | Should be during Dutch office hours; the call can generally be expected within an hour of the planned time. |
 
 **Responses**
 
@@ -336,18 +337,24 @@ Schedule an EV validation call with the CA.
 
 ### `getDcvEmails`
 
-`GET /v2/ssl/certificates/dcv-email-addresses`
+`GET /v2/ssl/dcvemailaddresslist/{domainName}`
 
-List the approver email addresses accepted for EMAIL DCV on a given FQDN.
+List the approver email addresses accepted for EMAIL DCV on a given domain.
 
 - **Docs:** `https://dm.realtimeregister.com/docs/api/ssl/dcvemailaddresslist`
 - **Auth scope:** `customer`
+
+**Path params**
+
+| Name | Type | Required | Description |
+| --- | --- | --- | --- |
+| `domainName` | `string` | yes | The domain name. |
 
 **Query params**
 
 | Name | Type | Required | Description |
 | --- | --- | --- | --- |
-| `fqdn` | `string` | yes |  |
+| `product` | `string` | no | The product to fetch addresses for. |
 
 **Responses**
 
@@ -358,9 +365,9 @@ List the approver email addresses accepted for EMAIL DCV on a given FQDN.
 
 ### `sendSubscriberAgreement`
 
-`POST /v2/ssl/certificates/{id}/send-subscriber-agreement`
+`POST /v2/processes/{processId}/send-subscriber-agreement`
 
-Send (or re-send) the CA Subscriber Agreement email to the approver for certificates that require explicit acceptance.
+Send (or re-send) the CA Subscriber Agreement email to the approver for a pending certificate request that requires explicit acceptance.
 
 - **Docs:** `https://dm.realtimeregister.com/docs/api/ssl/send-subscriber-agreement`
 - **Auth scope:** `customer`
@@ -369,7 +376,14 @@ Send (or re-send) the CA Subscriber Agreement email to the approver for certific
 
 | Name | Type | Required | Description |
 | --- | --- | --- | --- |
-| `id` | `string` | yes |  |
+| `processId` | `integer` | yes | Process ID of the pending certificate request. |
+
+**Request body** (`application/json`)
+
+| Field | Type | Required | Description |
+| --- | --- | --- | --- |
+| `email` | `string` | yes | The email address to send the subscriber agreement to. |
+| `language` | `string` | no | Language for the subscriber agreement. |
 
 **Responses**
 

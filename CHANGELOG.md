@@ -13,6 +13,7 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 ### Fixed
 
 - Fixed: createDnsZone now declares billables, so the documented BillableAcknowledgmentNeededException resubmit passes rtr validate.
+- Fixed: getDcvEmails, resendDcv, scheduleValidationCall and sendSubscriberAgreement pointed at nonexistent /v2/ssl/certificates/... paths; corrected to the live process-scoped endpoints.
 
 ## [0.2.2] — 2026-04-17
 

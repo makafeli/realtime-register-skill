@@ -168,21 +168,22 @@ operations:
   - operationId: resendDcv
     verified: docs
     method: POST
-    path: /v2/ssl/certificates/{id}/resend-dcv
+    path: /v2/processes/{processId}/resend
     docUrl: /ssl/resenddcv
     async: false
     authScope: customer
-    summary: Re-send the DCV email or re-check a DNS/HTTP DCV token.
+    summary: Re-send the DCV email or re-check a DNS/HTTP DCV token for a pending certificate request.
     pathParams:
-      - { name: id, type: string, required: true }
+      - { name: processId, type: integer, required: true, description: "Process ID of the pending certificate request." }
     requestBody:
       contentType: application/json
       fields:
-        fqdn:    { type: string, required: true }
-        dcvType: { type: string, enumRef: DcvType }
+        dcv: { type: array, required: true, itemsRef: Dcv, description: "List of DCVs for this certificate." }
     responses:
-      "200": { description: "DCV request re-queued." }
+      "200": { description: "DCV request re-queued; response may include a `warning` string on partial success." }
     errors: [InvalidParameter, ObjectDoesNotExist]
+    gotchas:
+      - "Specialized form of resendProcess (see processes.yaml) for certificate DCV; same endpoint, DCV-specific body."
 
   - operationId: downloadCertificate
     verified: docs
@@ -203,19 +204,17 @@ operations:
   - operationId: scheduleValidationCall
     verified: docs
     method: POST
-    path: /v2/ssl/certificates/{id}/schedule-validation-call
+    path: /v2/processes/{processId}/schedule-validation-call
     docUrl: /ssl/schedule-validation-call
     async: false
     authScope: customer
-    summary: Schedule an EV validation call with the CA.
+    summary: Schedule an EV validation call with the CA for a pending certificate request.
     pathParams:
-      - { name: id, type: string, required: true }
+      - { name: processId, type: integer, required: true, description: "Process ID of the pending certificate request." }
     requestBody:
       contentType: application/json
       fields:
-        date:    { type: string, required: true, format: date-time }
-        voice:   { type: string, required: true, format: e164 }
-        contact: { type: string, required: true, description: "Name of the person to contact." }
+        date: { type: string, required: true, format: date-time, description: "Should be during Dutch office hours; the call can generally be expected within an hour of the planned time." }
     responses:
       "200": { description: "Validation call scheduled." }
     errors: [InvalidParameter, ObjectDoesNotExist]
@@ -223,13 +222,15 @@ operations:
   - operationId: getDcvEmails
     verified: docs
     method: GET
-    path: /v2/ssl/certificates/dcv-email-addresses
+    path: /v2/ssl/dcvemailaddresslist/{domainName}
     docUrl: /ssl/dcvemailaddresslist
     async: false
     authScope: customer
-    summary: List the approver email addresses accepted for EMAIL DCV on a given FQDN.
+    summary: List the approver email addresses accepted for EMAIL DCV on a given domain.
+    pathParams:
+      - { name: domainName, type: string, required: true, description: "The domain name." }
     queryParams:
-      - { name: fqdn, type: string, required: true }
+      - { name: product, type: string, description: "The product to fetch addresses for." }
     responses:
       "200": { description: "Array of candidate email addresses (WHOIS + constructed)." }
     errors: [InvalidParameter]
@@ -237,13 +238,18 @@ operations:
   - operationId: sendSubscriberAgreement
     verified: docs
     method: POST
-    path: /v2/ssl/certificates/{id}/send-subscriber-agreement
+    path: /v2/processes/{processId}/send-subscriber-agreement
     docUrl: /ssl/send-subscriber-agreement
     async: false
     authScope: customer
-    summary: Send (or re-send) the CA Subscriber Agreement email to the approver for certificates that require explicit acceptance.
+    summary: Send (or re-send) the CA Subscriber Agreement email to the approver for a pending certificate request that requires explicit acceptance.
     pathParams:
-      - { name: id, type: string, required: true }
+      - { name: processId, type: integer, required: true, description: "Process ID of the pending certificate request." }
+    requestBody:
+      contentType: application/json
+      fields:
+        email:    { type: string, required: true, format: email, description: "The email address to send the subscriber agreement to." }
+        language: { type: string, enum: [EN, NL, FR, DE], description: "Language for the subscriber agreement." }
     responses:
       "200": { description: "Subscriber-agreement email dispatched." }
     errors: [InvalidParameter, ObjectDoesNotExist]
