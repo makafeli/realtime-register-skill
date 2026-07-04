@@ -208,7 +208,7 @@ Delete a brand.
 
 ### `getBrandTemplate`
 
-`GET /v2/customers/{customer}/brands/{handle}/templates/{template}`
+`GET /v2/customers/{customer}/brands/{brand}/templates/{name}`
 
 Retrieve a brand-specific notification/mail template override.
 
@@ -220,8 +220,8 @@ Retrieve a brand-specific notification/mail template override.
 | Name | Type | Required | Description |
 | --- | --- | --- | --- |
 | `customer` | `string` | yes |  |
-| `handle` | `string` | yes |  |
-| `template` | `string` | yes | Template identifier (e.g. TRANSFER_FOA, CONTACT_VERIFICATION). |
+| `brand` | `string` | yes |  |
+| `name` | `string` | yes | Template identifier (e.g. TRANSFER_FOA, CONTACT_VERIFICATION). |
 
 **Query params**
 
@@ -239,7 +239,7 @@ Retrieve a brand-specific notification/mail template override.
 
 ### `listBrandTemplates`
 
-`GET /v2/customers/{customer}/brands/{handle}/templates`
+`GET /v2/customers/{customer}/brands/{brand}/templates`
 
 List configured template overrides for a brand.
 
@@ -251,7 +251,7 @@ List configured template overrides for a brand.
 | Name | Type | Required | Description |
 | --- | --- | --- | --- |
 | `customer` | `string` | yes |  |
-| `handle` | `string` | yes |  |
+| `brand` | `string` | yes |  |
 
 **Query params**
 
@@ -272,7 +272,7 @@ List configured template overrides for a brand.
 
 ### `updateBrandTemplate`
 
-`POST /v2/customers/{customer}/brands/{handle}/templates/{template}/update`
+`POST /v2/customers/{customer}/brands/{brand}/templates/{name}/update`
 
 Create or update a brand template override. Omit a field to inherit the platform default.
 
@@ -284,8 +284,8 @@ Create or update a brand template override. Omit a field to inherit the platform
 | Name | Type | Required | Description |
 | --- | --- | --- | --- |
 | `customer` | `string` | yes |  |
-| `handle` | `string` | yes |  |
-| `template` | `string` | yes |  |
+| `brand` | `string` | yes |  |
+| `name` | `string` | yes |  |
 
 **Request body** (`application/json`)
 
@@ -309,7 +309,7 @@ Create or update a brand template override. Omit a field to inherit the platform
 
 ### `previewBrandTemplate`
 
-`POST /v2/customers/{customer}/brands/{handle}/templates/{template}/preview`
+`GET /v2/customers/{customer}/brands/{brand}/templates/{name}/preview`
 
 Render a template with sample data to preview the rendered subject/body.
 
@@ -321,8 +321,8 @@ Render a template with sample data to preview the rendered subject/body.
 | Name | Type | Required | Description |
 | --- | --- | --- | --- |
 | `customer` | `string` | yes |  |
-| `handle` | `string` | yes |  |
-| `template` | `string` | yes |  |
+| `brand` | `string` | yes |  |
+| `name` | `string` | yes |  |
 
 **Query params**
 
@@ -330,17 +330,15 @@ Render a template with sample data to preview the rendered subject/body.
 | --- | --- | --- | --- |
 | `context` | `string` | no | The context to request a preview for. |
 
-**Request body** (`application/json`)
-
-| Field | Type | Required | Description |
-| --- | --- | --- | --- |
-| `locale` | `string` | yes |  |
-
 **Responses**
 
 - `200` — Rendered `{ subject, text, html }` preview.
 
 **Errors:** `InvalidParameter`, `ObjectDoesNotExist`
+
+**Gotchas**
+
+- GET, not POST; a GET has no request body. The live docs page for this operation has no `locale` field at all (query or body) — the previously spec'd required `locale` body field does not exist on the live page and has been dropped rather than moved to a query param.
 
 
 ### `listBrandLocales`

@@ -142,15 +142,15 @@ operations:
   - operationId: getBrandTemplate
     verified: docs
     method: GET
-    path: /v2/customers/{customer}/brands/{handle}/templates/{template}
+    path: /v2/customers/{customer}/brands/{brand}/templates/{name}
     docUrl: /brands/templates/get
     async: false
     authScope: customer
     summary: Retrieve a brand-specific notification/mail template override.
     pathParams:
       - { name: customer, type: string, required: true }
-      - { name: handle,   type: string, required: true }
-      - { name: template, type: string, required: true,
+      - { name: brand,    type: string, required: true }
+      - { name: name,     type: string, required: true,
           description: "Template identifier (e.g. TRANSFER_FOA, CONTACT_VERIFICATION)." }
     queryParams:
       - { name: locale, type: string, example: "en_US" }
@@ -162,14 +162,14 @@ operations:
   - operationId: listBrandTemplates
     verified: docs
     method: GET
-    path: /v2/customers/{customer}/brands/{handle}/templates
+    path: /v2/customers/{customer}/brands/{brand}/templates
     docUrl: /brands/templates/list
     async: false
     authScope: customer
     summary: List configured template overrides for a brand.
     pathParams:
       - { name: customer, type: string, required: true }
-      - { name: handle,   type: string, required: true }
+      - { name: brand,    type: string, required: true }
     queryParams:
       - { name: fields, type: string }
       - { name: q,      type: string }
@@ -183,15 +183,15 @@ operations:
   - operationId: updateBrandTemplate
     verified: docs
     method: POST
-    path: /v2/customers/{customer}/brands/{handle}/templates/{template}/update
+    path: /v2/customers/{customer}/brands/{brand}/templates/{name}/update
     docUrl: /brands/templates/update
     async: false
     authScope: customer
     summary: Create or update a brand template override. Omit a field to inherit the platform default.
     pathParams:
       - { name: customer, type: string, required: true }
-      - { name: handle,   type: string, required: true }
-      - { name: template, type: string, required: true }
+      - { name: brand,    type: string, required: true }
+      - { name: name,     type: string, required: true }
     requestBody:
       contentType: application/json
       fields:
@@ -207,25 +207,23 @@ operations:
 
   - operationId: previewBrandTemplate
     verified: docs
-    method: POST
-    path: /v2/customers/{customer}/brands/{handle}/templates/{template}/preview
+    method: GET
+    path: /v2/customers/{customer}/brands/{brand}/templates/{name}/preview
     docUrl: /brands/templates/preview
     async: false
     authScope: customer
     summary: Render a template with sample data to preview the rendered subject/body.
     pathParams:
       - { name: customer, type: string, required: true }
-      - { name: handle,   type: string, required: true }
-      - { name: template, type: string, required: true }
+      - { name: brand,    type: string, required: true }
+      - { name: name,     type: string, required: true }
     queryParams:
       - { name: context, type: string, description: "The context to request a preview for." }
-    requestBody:
-      contentType: application/json
-      fields:
-        locale: { type: string, required: true, example: "en_US" }
     responses:
       "200": { description: "Rendered `{ subject, text, html }` preview." }
     errors: [InvalidParameter, ObjectDoesNotExist]
+    gotchas:
+      - "GET, not POST; a GET has no request body. The live docs page for this operation has no `locale` field at all (query or body) — the previously spec'd required `locale` body field does not exist on the live page and has been dropped rather than moved to a query param."
 
   - operationId: listBrandLocales
     verified: docs
