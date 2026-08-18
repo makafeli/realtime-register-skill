@@ -258,8 +258,12 @@ claim is machine-enforced from here on: a committed fingerprint lock
 (`assets/spec/_fingerprints.json`) fails the audit if a verified contract is
 edited without re-verification, and the weekly drift job diffs every
 operation's method, path, and required fields against the live pages
-(non-machine-readable doc pages are marked `liveDiff: false`). Promotion
-workflow, drift policy, and enforcement tooling are documented in
+(non-machine-readable doc pages are marked `liveDiff: false`). Method/path
+drift is auto-corrected and opened as a pull request for human review
+(`fidelity-drift/auto-fix`, label `fidelity-drift`); drift the job can't
+safely auto-correct (a differing required-field count, an unreachable page,
+or a scraper-breaking markup change) opens a `fidelity-drift` issue instead.
+Promotion workflow, drift policy, and enforcement tooling are documented in
 [`docs/fidelity.md`](docs/fidelity.md).
 
 ---

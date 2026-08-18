@@ -86,6 +86,7 @@ local cache of HTML files (see its header comment).
 | `node scripts/audit-refs.mjs --update-lock` | Regenerates `assets/spec/_fingerprints.json` after a deliberate, re-verified contract edit |
 | `rtr doctor`                     | Every `docUrl` returns HTTP 200                 |
 | `node scripts/diff-live.mjs`     | Full live diff: scrapes every operation's doc page and compares method, path, and required-field counts (ops marked `liveDiff: false` are skipped and counted) |
+| `node scripts/diff-live.mjs --fix` | Same diff, plus: auto-corrects `method`/`path` drift in place (format-preserving edit via `src/lib/patch-spec.ts`), leaving `required-count`/`fetch`/`parse` drift unfixed |
 | `npx vitest run`                 | 136 tests incl. an Ajv compile gate over all operations and a byte-exact references-sync check |
 | `scripts/extract-fields.mjs`     | Pulls URL fields / request params / request content from cached HTML (bulk work) |
 | `tsc --noEmit`                   | Type safety of the schema-derivation code       |
@@ -118,24 +119,76 @@ should never be invoked with customer-scope credentials.
 
 ## Drift policy
 
-Upstream docs can change silently. The project detects drift automatically:
+Upstream docs can change silently. **Detection is fully automated. Fixing is
+automated only where the fix is unambiguous — everything else still needs a
+human (or an agent working through the Promotion workflow above).**
 
-1. **Weekly live diff** (`.github/workflows/drift.yml`, Mondays 03:17 UTC):
-   `scripts/diff-live.mjs` scrapes every operation's doc page and compares
-   method, path, and required-field counts against the spec. Any mismatch
-   opens (or comments on) a GitHub issue labelled `fidelity-drift`. Drift
-   kinds: `method`, `path`, `required-count`, `fetch` (page unreachable), and
-   `parse` — the scraper could not read the page's method/URL, which signals
-   scraper maintenance rather than spec drift.
-2. Doc pages that cannot be machine-diffed (ADAC WebSocket messages, the
-   webhook description, the TLD metadata overview, and pages without a
-   machine-readable method) are marked `liveDiff: false` in the spec and
-   skipped, so the weekly run stays signal-only.
-3. `rtr doctor` on every push to `main` (catches slug renames/deletions).
-4. Community drift reports welcomed via GitHub issues with the
-   `fidelity-drift` label.
+### The weekly job
 
-When drift is detected, the reconciliation workflow above applies — including
-the `--update-lock` step, since a reconciled contract gets a new fingerprint.
-As of v0.3.0 the full live diff reports zero drifts across all checkable
+`.github/workflows/drift.yml` runs every Monday at 03:17 UTC (and on-demand
+via `workflow_dispatch`) and does the following, in order:
+
+1. **`rtr doctor`** — confirms every `docUrl` still resolves with HTTP 200.
+   Not auto-fixable: a 404/redirect could mean a renamed slug, a removed
+   endpoint, or a site reorganization, and there's no way to infer the
+   intended replacement path from a broken link alone.
+2. **`node scripts/diff-live.mjs --fix`** — scrapes every non-skipped
+   operation's doc page and compares `method`, `path`, and the count of
+   required body fields against `assets/spec/`. Five drift kinds:
+
+   | Kind             | Meaning                                          | Auto-fixed? |
+   | ---------------- | ------------------------------------------------- | :---------: |
+   | `method`         | Live HTTP verb differs from the spec               | ✅ |
+   | `path`           | Live URL template differs from the spec             | ✅ |
+   | `required-count` | Live page has a different number of required body fields — but the scraper only knows the *count* changed, not *which field* | ❌ |
+   | `fetch`          | The doc page didn't load (network/HTTP error)       | ❌ |
+   | `parse`          | The scraper couldn't find a method on the page at all — the site's markup itself changed, which is a scraper bug, not a spec bug | ❌ |
+
+   `method` and `path` are auto-fixable because the scraper already holds a
+   complete, unambiguous replacement value the moment it detects the
+   mismatch — there's nothing to guess. The other three kinds are left alone
+   on purpose: a `required-count` mismatch doesn't say *which* field was
+   added or removed, and guessing would risk writing a wrong field name into
+   a `verified: docs` operation, which is exactly what the fingerprint lock
+   exists to prevent.
+
+3. **If anything was auto-fixed**, the job regenerates
+   `assets/spec/_fingerprints.json` (`--update-lock`) and
+   `references/*.md` (`rtr generate`) in the same run, then runs
+   `npm run verify` as a gate — if that fails, the job fails loudly instead
+   of opening a broken pull request, and any drift already found is still
+   reported via the issue path below. On success, it opens or updates a pull
+   request:
+   - branch `fidelity-drift/auto-fix`, force-pushed each run (at most one
+     auto-fix PR exists at a time — a new run replaces the previous one's
+     content rather than piling up);
+   - labelled `fidelity-drift`;
+   - body lists exactly which operations/fields were changed, plus a link to
+     the workflow run;
+   - **always requires human review and merge** — nothing lands on `main`
+     automatically.
+4. **Any operation still carrying an unfixed drift** (`required-count`,
+   `fetch`, `parse`, or a `doctor` failure) opens or comments on a GitHub
+   issue labelled `fidelity-drift`, with the full JSON report attached and a
+   link to the run. Reconcile these by hand through the Promotion workflow
+   above (`rtr scrape <operationId>` → edit the YAML → `--update-lock` →
+   `rtr generate` → `npm run verify`).
+
+### What's skipped, and why
+
+Doc pages that cannot be machine-diffed at all — ADAC WebSocket messages, the
+webhook description, the TLD metadata overview, and any page without a
+machine-readable method in its markup — are marked `liveDiff: false` in the
+spec and skipped by both the diff and the fix pass, so the weekly run stays
+signal-only instead of firing permanently on pages it can't actually check.
+
+### Other channels
+
+- `rtr doctor` also runs on every push to `main`, independent of the weekly
+  schedule, catching a broken `docUrl` as soon as it lands.
+- Community drift reports are welcomed via GitHub issues with the
+  `fidelity-drift` label — same label the automated job uses, so both
+  streams triage together.
+
+As of v0.3.1 the full live diff reports zero drifts across all checkable
 operations.

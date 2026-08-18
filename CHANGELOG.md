@@ -6,6 +6,23 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+### Added
+
+- **Weekly drift job auto-fixes `method`/`path` drift and opens a pull
+  request.** `scripts/diff-live.mjs --fix` patches the shipped spec in place
+  when the live docs disagree on the HTTP method or URL template — the only
+  two drift kinds where the scraper already holds a complete, unambiguous
+  replacement value — using a new format-preserving YAML editor
+  (`src/lib/patch-spec.ts`) that leaves comments, spacing, and every other
+  operation in the file untouched. The fingerprint lock and generated
+  references are regenerated in the same commit, `npm run verify` gates the
+  result before anything is proposed, and the PR (branch
+  `fidelity-drift/auto-fix`, label `fidelity-drift`) always requires human
+  review — nothing merges automatically. Drift the job can't safely
+  auto-correct (`required-count`, `fetch`, `parse`, or a `doctor` failure)
+  still opens/updates a `fidelity-drift` issue as before. See
+  [`docs/fidelity.md`](docs/fidelity.md#drift-policy) for the full policy.
+
 ## [0.3.1] — 2026-07-04
 
 Docs-only release so the npm package page reflects the 0.3.0 feature set.
